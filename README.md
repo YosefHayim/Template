@@ -8,11 +8,13 @@
 
 This GitHub Action scans all your repositories (public and optionally private), detects the programming languages, frameworks, and tools you use, and automatically updates your profile README with beautiful badges - all on autopilot!
 
+**Powered by [@specfy/stack-analyser](https://github.com/specfy/stack-analyser)** - Detects **700+ technologies** in your codebase!
+
 ## ✨ Features
 
 - 🔄 **Automatic Scanning**: Runs every 12 hours (customizable) to keep your tech stack up-to-date
-- 🎯 **Smart Detection**: Uses GitHub's Linguist data to accurately detect programming languages
-- 🔍 **Framework Recognition**: Detects popular frameworks and libraries from dependency files
+- 🎯 **Smart Detection**: Powered by @specfy/stack-analyser to detect 700+ technologies
+- 🔍 **Comprehensive Analysis**: Detects languages, frameworks, databases, cloud services, and more
 - 🎨 **Beautiful Badges**: Generates shields.io badges with customizable styles and colors
 - 🔒 **Private Repo Support**: Optionally scan private repositories with proper authentication
 - ⚙️ **Highly Configurable**: Control minimum percentages, badge limits, exclusions, and more
@@ -198,41 +200,33 @@ Use different markers for multiple sections:
 
 ## 🔍 Detected Technologies
 
-### Programming Languages
+This action uses **[@specfy/stack-analyser](https://github.com/specfy/stack-analyser)** to detect **700+ technologies** across your repositories!
 
-The action automatically detects all programming languages using GitHub's Linguist engine, including:
+### What Gets Detected?
 
-- JavaScript, TypeScript, Python, Java, C, C++, C#, Go, Rust, PHP
-- Ruby, Swift, Kotlin, Scala, R, Perl, Haskell, Lua, Dart, Elixir
-- And many more!
+**Programming Languages:**
+- JavaScript, TypeScript, Python, Java, C, C++, C#, Go, Rust, PHP, Ruby, Swift, Kotlin, Scala, R, Dart, Elixir, Clojure, Haskell, Lua, Zig, and more!
 
-### Frameworks & Libraries
+**Web Frameworks:**
+- React, Vue, Angular, Svelte, Next.js, Nuxt.js, Gatsby, Express, Django, Flask, FastAPI, Spring, Laravel, Rails, and more!
 
-When `include_frameworks` is enabled, the action scans dependency files to detect:
+**Databases:**
+- PostgreSQL, MySQL, MongoDB, Redis, SQLite, Cassandra, Elasticsearch, DynamoDB, Firestore, Supabase, and more!
 
-**JavaScript/Node.js** (package.json):
-- React, Vue, Angular, Svelte, Next.js, Nuxt.js, Gatsby
-- Express, Nest.js, jQuery, Bootstrap, Tailwind CSS, Material-UI
-- Jest, Mocha, Webpack, Vite, Babel
+**DevOps & Cloud:**
+- Docker, Kubernetes, AWS, Azure, GCP, Terraform, Ansible, Jenkins, GitHub Actions, CircleCI, Vercel, Netlify, Heroku, and more!
 
-**Python** (requirements.txt):
-- Django, Flask, FastAPI, Pytest
-- NumPy, Pandas, TensorFlow, PyTorch, Scikit-learn
+**Testing & Build Tools:**
+- Jest, Mocha, Pytest, JUnit, Cypress, Playwright, Webpack, Vite, Babel, Rollup, Gradle, Maven, and more!
 
-**Ruby** (Gemfile):
-- Rails, Sinatra, RSpec
+**And many more categories:**
+- Monitoring tools (Datadog, Sentry, Grafana, Prometheus)
+- GraphQL, REST APIs, gRPC
+- Machine Learning libraries
+- Mobile development frameworks
+- And 700+ total technologies!
 
-**Java** (pom.xml, build.gradle):
-- Spring, Hibernate, JUnit, Android, Kotlin
-
-**PHP** (composer.json):
-- Laravel, Symfony, WordPress
-
-**Go** (go.mod):
-- Gin, Echo, Fiber
-
-**Rust** (Cargo.toml):
-- Actix, Rocket, Tokio
+See the [full list of supported technologies](https://github.com/specfy/stack-analyser/tree/main/src/rules) in the stack-analyser repository.
 
 ## 📊 Example Output
 
@@ -360,9 +354,10 @@ If you find this action useful, please consider:
 
 ## 🙏 Acknowledgments
 
-- [shields.io](https://shields.io/) for the badge service
-- [GitHub Linguist](https://github.com/github/linguist) for language detection
-- [Octokit](https://github.com/octokit/rest.js) for GitHub API interactions
+- **[@specfy/stack-analyser](https://github.com/specfy/stack-analyser)** - The powerful technology detection engine that makes this action possible
+- [shields.io](https://shields.io/) - For the beautiful badge service
+- [Octokit](https://github.com/octokit/rest.js) - For GitHub API interactions
+- [getstack.dev](https://getstack.dev) - For creating and maintaining the stack-analyser library
 
 ---
 

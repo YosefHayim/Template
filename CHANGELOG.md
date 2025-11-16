@@ -11,10 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - 🎉 Initial release of README Profile Tech Stack Sync
 - Automatic scanning of all GitHub repositories (public and private)
-- Language detection using GitHub's Linguist API
-- Framework and library detection from dependency files
-- Support for 50+ programming languages
-- Support for 40+ popular frameworks and libraries
+- **Powered by [@specfy/stack-analyser](https://github.com/specfy/stack-analyser)** - Detection of 700+ technologies!
+- Comprehensive technology detection including languages, frameworks, databases, cloud services, and more
+- Support for all major programming languages
+- Support for hundreds of frameworks and libraries
 - Badge generation using shields.io
 - Customizable badge styles (flat, flat-square, for-the-badge, plastic, social)
 - README auto-update between custom markers
@@ -54,21 +54,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `badges_updated` - Boolean update status
   - `total_repos_scanned` - Total repositories scanned
 
-### Supported Technologies
+### Supported Technologies (700+)
 
-#### Programming Languages (50+)
-- JavaScript, TypeScript, Python, Java, C, C++, C#, Ruby, Go, Rust
-- PHP, Swift, Kotlin, Scala, R, Perl, Haskell, Lua, Dart, Elixir
-- Clojure, Objective-C, Shell, PowerShell, HTML, CSS, and more
+Thanks to [@specfy/stack-analyser](https://github.com/specfy/stack-analyser), this action detects:
 
-#### Frameworks & Libraries (40+)
-- **Frontend:** React, Vue, Angular, Svelte, Next.js, Nuxt.js, Gatsby
-- **Backend:** Express, Django, Flask, FastAPI, Spring, Laravel, Rails
-- **Testing:** Jest, Mocha, Pytest, JUnit, RSpec, Selenium, Cypress
-- **Build Tools:** Webpack, Vite, Babel, Rollup, Gradle, Maven
-- **Databases:** MySQL, PostgreSQL, MongoDB, Redis, SQLite
-- **DevOps:** Docker, Kubernetes, AWS, Azure, GCP, Terraform, Ansible
-- **Other:** GraphQL, REST, gRPC, WebAssembly, Jupyter
+- **Programming Languages:** JavaScript, TypeScript, Python, Java, C, C++, C#, Ruby, Go, Rust, PHP, Swift, Kotlin, Scala, Dart, Elixir, Clojure, Haskell, Zig, and many more
+- **Web Frameworks:** React, Vue, Angular, Svelte, Next.js, Nuxt.js, Gatsby, Express, Django, Flask, FastAPI, Spring, Laravel, Rails, and many more
+- **Databases:** PostgreSQL, MySQL, MongoDB, Redis, SQLite, Cassandra, Elasticsearch, DynamoDB, Firestore, Supabase, and many more
+- **DevOps & Cloud:** Docker, Kubernetes, AWS, Azure, GCP, Terraform, Ansible, Jenkins, GitHub Actions, CircleCI, Vercel, Netlify, Heroku, and many more
+- **Testing Tools:** Jest, Mocha, Pytest, JUnit, Cypress, Playwright, Selenium, and many more
+- **Build Tools:** Webpack, Vite, Babel, Rollup, Gradle, Maven, and many more
+- **Monitoring:** Datadog, Sentry, Grafana, Prometheus, New Relic, and many more
+- **And much more:** See the [full list](https://github.com/specfy/stack-analyser/tree/main/src/rules)
 
 ### Known Issues
 

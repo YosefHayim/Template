@@ -1,179 +1,153 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 const { Octokit } = require('@octokit/rest');
+const { analyser, FSProvider, flatten } = require('@specfy/stack-analyser');
 const fs = require('fs').promises;
 const path = require('path');
+const { execSync } = require('child_process');
+const os = require('os');
 
-// Technology color mappings
+// Load stack-analyser rules
+require('@specfy/stack-analyser/dist/autoload');
+
+// Technology color mappings for badges
 const TECH_COLORS = {
   // Programming Languages
-  'JavaScript': 'F7DF1E',
-  'TypeScript': '3178C6',
-  'Python': '3776AB',
-  'Java': '007396',
-  'C': 'A8B9CC',
-  'C++': '00599C',
-  'C#': '239120',
-  'Ruby': 'CC342D',
-  'Go': '00ADD8',
-  'Rust': '000000',
-  'PHP': '777BB4',
-  'Swift': 'FA7343',
-  'Kotlin': '7F52FF',
-  'Scala': 'DC322F',
-  'R': '276DC3',
-  'Perl': '39457E',
-  'Haskell': '5D4F85',
-  'Lua': '2C2D72',
-  'Dart': '0175C2',
-  'Elixir': '4B275F',
-  'Clojure': '5881D8',
-  'Objective-C': '438EFF',
-  'Shell': '89E051',
-  'PowerShell': '5391FE',
+  'javascript': 'F7DF1E',
+  'typescript': '3178C6',
+  'python': '3776AB',
+  'java': '007396',
+  'c': 'A8B9CC',
+  'cpp': '00599C',
+  'csharp': '239120',
+  'ruby': 'CC342D',
+  'go': '00ADD8',
+  'golang': '00ADD8',
+  'rust': '000000',
+  'php': '777BB4',
+  'swift': 'FA7343',
+  'kotlin': '7F52FF',
+  'scala': 'DC322F',
+  'r': '276DC3',
+  'perl': '39457E',
+  'haskell': '5D4F85',
+  'lua': '2C2D72',
+  'dart': '0175C2',
+  'elixir': '4B275F',
+  'clojure': '5881D8',
+  'objectivec': '438EFF',
+  'shell': '89E051',
+  'bash': '89E051',
+  'powershell': '5391FE',
+  'zig': 'F7A41D',
 
   // Web Technologies
-  'HTML': 'E34F26',
-  'CSS': '1572B6',
-  'SCSS': 'CC6699',
-  'SASS': 'CC6699',
-  'Vue': '4FC08D',
-  'React': '61DAFB',
-  'Angular': 'DD0031',
-  'Svelte': 'FF3E00',
+  'html': 'E34F26',
+  'css': '1572B6',
+  'scss': 'CC6699',
+  'sass': 'CC6699',
+  'vue': '4FC08D',
+  'react': '61DAFB',
+  'angular': 'DD0031',
+  'svelte': 'FF3E00',
 
   // Frameworks & Libraries
-  'Node.js': '339933',
-  'Express': '000000',
-  'Django': '092E20',
-  'Flask': '000000',
-  'FastAPI': '009688',
-  'Spring': '6DB33F',
-  'Laravel': 'FF2D20',
-  'Rails': 'CC0000',
-  'Next.js': '000000',
-  'Nuxt.js': '00DC82',
-  'Gatsby': '663399',
-  'jQuery': '0769AD',
-  'Bootstrap': '7952B3',
-  'Tailwind': '06B6D4',
-  'Material-UI': '007FFF',
+  'nodejs': '339933',
+  'node': '339933',
+  'express': '000000',
+  'django': '092E20',
+  'flask': '000000',
+  'fastapi': '009688',
+  'spring': '6DB33F',
+  'laravel': 'FF2D20',
+  'rails': 'CC0000',
+  'nextjs': '000000',
+  'nuxtjs': '00DC82',
+  'gatsby': '663399',
+  'jquery': '0769AD',
+  'bootstrap': '7952B3',
+  'tailwind': '06B6D4',
+  'tailwindcss': '06B6D4',
+  'materialui': '007FFF',
+  'vite': '646CFF',
+  'webpack': '8DD6F9',
+  'nestjs': 'E0234E',
+  'fastify': '000000',
 
   // Databases
-  'MySQL': '4479A1',
-  'PostgreSQL': '4169E1',
-  'MongoDB': '47A248',
-  'Redis': 'DC382D',
-  'SQLite': '003B57',
-  'MariaDB': '003545',
-  'Oracle': 'F80000',
-  'Cassandra': '1287B1',
-  'Elasticsearch': '005571',
-  'Neo4j': '008CC1',
+  'mysql': '4479A1',
+  'postgresql': '4169E1',
+  'postgres': '4169E1',
+  'mongodb': '47A248',
+  'redis': 'DC382D',
+  'sqlite': '003B57',
+  'mariadb': '003545',
+  'oracle': 'F80000',
+  'cassandra': '1287B1',
+  'elasticsearch': '005571',
+  'neo4j': '008CC1',
+  'dynamodb': '4053D6',
+  'firestore': 'FFCA28',
+  'supabase': '3ECF8E',
+  'prisma': '2D3748',
 
   // Cloud & DevOps
-  'Docker': '2496ED',
-  'Kubernetes': '326CE5',
-  'AWS': 'FF9900',
-  'Azure': '0078D4',
-  'GCP': '4285F4',
-  'Terraform': '7B42BC',
-  'Ansible': 'EE0000',
-  'Jenkins': 'D24939',
-  'GitLab': 'FC6D26',
-  'GitHub': '181717',
+  'docker': '2496ED',
+  'kubernetes': '326CE5',
+  'aws': 'FF9900',
+  'azure': '0078D4',
+  'gcp': '4285F4',
+  'googlecloud': '4285F4',
+  'terraform': '7B42BC',
+  'ansible': 'EE0000',
+  'jenkins': 'D24939',
+  'gitlab': 'FC6D26',
+  'github': '181717',
+  'githubactions': '2088FF',
+  'circleci': '343434',
+  'travisci': '3EAAAF',
+  'vercel': '000000',
+  'netlify': '00C7B7',
+  'heroku': '430098',
+  'digitalocean': '0080FF',
+
+  // Monitoring & Analytics
+  'datadog': '632CA6',
+  'newrelic': '008C99',
+  'sentry': 'FB4226',
+  'grafana': 'F46800',
+  'prometheus': 'E6522C',
 
   // Testing
-  'Jest': 'C21325',
-  'Mocha': '8D6748',
-  'Pytest': '0A9EDC',
-  'JUnit': '25A162',
-  'Selenium': '43B02A',
-  'Cypress': '17202C',
+  'jest': 'C21325',
+  'mocha': '8D6748',
+  'pytest': '0A9EDC',
+  'junit': '25A162',
+  'selenium': '43B02A',
+  'cypress': '17202C',
+  'playwright': '2EAD33',
+  'vitest': '6E9F18',
 
   // Build Tools
-  'Webpack': '8DD6F9',
-  'Vite': '646CFF',
-  'Babel': 'F9DC3E',
-  'Rollup': 'EC4A3F',
-  'Gradle': '02303A',
-  'Maven': 'C71A36',
+  'babel': 'F9DC3E',
+  'rollup': 'EC4A3F',
+  'gradle': '02303A',
+  'maven': 'C71A36',
+  'npm': 'CB3837',
+  'yarn': '2C8EBB',
+  'pnpm': 'F69220',
 
   // Other
-  'Git': 'F05032',
-  'GraphQL': 'E10098',
-  'REST': '009688',
-  'gRPC': '4285F4',
-  'WebAssembly': '654FF0',
-  'Jupyter': 'F37626',
-  'Markdown': '000000',
-};
-
-// Framework detection patterns
-const FRAMEWORK_PATTERNS = {
-  'package.json': {
-    'React': ['react'],
-    'Vue': ['vue'],
-    'Angular': ['@angular/core'],
-    'Next.js': ['next'],
-    'Nuxt.js': ['nuxt'],
-    'Express': ['express'],
-    'Nest.js': ['@nestjs/core'],
-    'Gatsby': ['gatsby'],
-    'Svelte': ['svelte'],
-    'jQuery': ['jquery'],
-    'Bootstrap': ['bootstrap'],
-    'Tailwind': ['tailwindcss'],
-    'Material-UI': ['@mui/material', '@material-ui/core'],
-    'Jest': ['jest'],
-    'Mocha': ['mocha'],
-    'Webpack': ['webpack'],
-    'Vite': ['vite'],
-    'Babel': ['@babel/core'],
-    'TypeScript': ['typescript'],
-    'GraphQL': ['graphql'],
-  },
-  'requirements.txt': {
-    'Django': ['django'],
-    'Flask': ['flask'],
-    'FastAPI': ['fastapi'],
-    'Pytest': ['pytest'],
-    'NumPy': ['numpy'],
-    'Pandas': ['pandas'],
-    'TensorFlow': ['tensorflow'],
-    'PyTorch': ['torch'],
-    'Scikit-learn': ['scikit-learn', 'sklearn'],
-  },
-  'Gemfile': {
-    'Rails': ['rails'],
-    'Sinatra': ['sinatra'],
-    'RSpec': ['rspec'],
-  },
-  'pom.xml': {
-    'Spring': ['spring-boot', 'springframework'],
-    'Hibernate': ['hibernate'],
-    'JUnit': ['junit'],
-  },
-  'build.gradle': {
-    'Spring': ['spring-boot', 'springframework'],
-    'Android': ['com.android'],
-    'Kotlin': ['kotlin'],
-  },
-  'composer.json': {
-    'Laravel': ['laravel/framework'],
-    'Symfony': ['symfony'],
-    'WordPress': ['wordpress'],
-  },
-  'go.mod': {
-    'Gin': ['gin-gonic/gin'],
-    'Echo': ['labstack/echo'],
-    'Fiber': ['gofiber/fiber'],
-  },
-  'Cargo.toml': {
-    'Actix': ['actix-web'],
-    'Rocket': ['rocket'],
-    'Tokio': ['tokio'],
-  },
+  'git': 'F05032',
+  'graphql': 'E10098',
+  'rest': '009688',
+  'grpc': '4285F4',
+  'webassembly': '654FF0',
+  'jupyter': 'F37626',
+  'markdown': '000000',
+  'eslint': '4B32C3',
+  'prettier': 'F7B93E',
+  'storybook': 'FF4785',
 };
 
 async function run() {
@@ -191,7 +165,7 @@ async function run() {
     const customColors = JSON.parse(core.getInput('custom_colors') || '{}');
     const excludeLanguages = core.getInput('exclude_languages')
       .split(',')
-      .map(lang => lang.trim())
+      .map(lang => lang.trim().toLowerCase())
       .filter(lang => lang.length > 0);
     const includeFrameworks = core.getInput('include_frameworks') === 'true';
     const commitMessage = core.getInput('commit_message');
@@ -201,7 +175,7 @@ async function run() {
     // Merge custom colors with defaults
     const colors = { ...TECH_COLORS, ...customColors };
 
-    core.info('🔍 Starting tech stack scan...');
+    core.info('🔍 Starting tech stack scan with @specfy/stack-analyser...');
 
     const octokit = new Octokit({ auth: token });
     const username = github.context.repo.owner;
@@ -211,26 +185,16 @@ async function run() {
     const repos = await fetchAllRepositories(octokit, username, includePrivate);
     core.info(`Found ${repos.length} repositories to scan`);
 
-    // Aggregate language statistics
-    const techStack = await aggregateTechStack(octokit, repos, minPercentage, excludeLanguages);
-
-    // Detect frameworks if enabled
-    if (includeFrameworks) {
-      core.info('🔎 Detecting frameworks and libraries...');
-      const frameworks = await detectFrameworks(octokit, repos, username);
-
-      // Add frameworks to tech stack
-      for (const [framework, count] of Object.entries(frameworks)) {
-        if (!techStack[framework]) {
-          techStack[framework] = {
-            name: framework,
-            percentage: 0,
-            repos: count,
-            isFramework: true
-          };
-        }
-      }
-    }
+    // Analyze repositories and aggregate technologies
+    core.info('🔬 Analyzing repositories with stack-analyser...');
+    const techStack = await analyzeRepositories(
+      repos,
+      username,
+      token,
+      excludeLanguages,
+      includeFrameworks,
+      minPercentage
+    );
 
     // Sort technologies
     const sortedTechs = sortTechnologies(techStack, sortBy);
@@ -288,6 +252,7 @@ async function fetchAllRepositories(octokit, username, includePrivate) {
 
     if (data.length === 0) break;
 
+    // Filter out forks and archived repos
     repos.push(...data.filter(repo => !repo.fork && !repo.archived));
 
     if (data.length < perPage) break;
@@ -297,95 +262,142 @@ async function fetchAllRepositories(octokit, username, includePrivate) {
   return repos;
 }
 
-async function aggregateTechStack(octokit, repos, minPercentage, excludeLanguages) {
-  const languageStats = {};
-  let totalBytes = 0;
+async function analyzeRepositories(repos, username, token, excludeLanguages, includeFrameworks, minPercentage) {
+  const techCounts = new Map();
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'stack-analyser-'));
 
-  for (const repo of repos) {
-    try {
-      const { data: languages } = await octokit.repos.listLanguages({
-        owner: repo.owner.login,
-        repo: repo.name,
-      });
+  try {
+    // Analyze each repository
+    for (const repo of repos) {
+      try {
+        core.info(`  Analyzing ${repo.name}...`);
 
-      for (const [language, bytes] of Object.entries(languages)) {
-        if (excludeLanguages.includes(language)) continue;
+        // Clone repository to temp directory
+        const repoPath = path.join(tempDir, repo.name);
+        const cloneUrl = `https://x-access-token:${token}@github.com/${username}/${repo.name}.git`;
 
-        if (!languageStats[language]) {
-          languageStats[language] = { bytes: 0, repos: new Set() };
+        try {
+          execSync(`git clone --depth 1 --quiet "${cloneUrl}" "${repoPath}"`, {
+            stdio: 'pipe',
+            timeout: 60000, // 1 minute timeout
+          });
+        } catch (cloneError) {
+          core.warning(`  Failed to clone ${repo.name}: ${cloneError.message}`);
+          continue;
         }
-        languageStats[language].bytes += bytes;
-        languageStats[language].repos.add(repo.name);
-        totalBytes += bytes;
+
+        // Run stack-analyser
+        let result;
+        try {
+          result = await analyser({
+            provider: new FSProvider({
+              path: repoPath,
+            }),
+          });
+        } catch (analyseError) {
+          core.warning(`  Failed to analyze ${repo.name}: ${analyseError.message}`);
+          // Clean up repo directory
+          await fs.rm(repoPath, { recursive: true, force: true });
+          continue;
+        }
+
+        // Extract technologies
+        const flat = flatten(result);
+        const json = flat.toJson();
+
+        // Process all detected techs
+        if (json.techs && json.techs.length > 0) {
+          for (const tech of json.techs) {
+            const techName = tech.toLowerCase();
+
+            // Skip excluded languages
+            if (excludeLanguages.includes(techName)) {
+              continue;
+            }
+
+            if (!techCounts.has(techName)) {
+              techCounts.set(techName, {
+                name: tech,
+                count: 0,
+                repos: new Set(),
+              });
+            }
+
+            const techData = techCounts.get(techName);
+            techData.count++;
+            techData.repos.add(repo.name);
+          }
+        }
+
+        // Process languages
+        if (json.languages && Object.keys(json.languages).length > 0) {
+          for (const lang of Object.keys(json.languages)) {
+            const langName = lang.toLowerCase();
+
+            // Skip excluded languages
+            if (excludeLanguages.includes(langName)) {
+              continue;
+            }
+
+            if (!techCounts.has(langName)) {
+              techCounts.set(langName, {
+                name: lang,
+                count: 0,
+                repos: new Set(),
+              });
+            }
+
+            const techData = techCounts.get(langName);
+            techData.count++;
+            techData.repos.add(repo.name);
+          }
+        }
+
+        // Clean up repo directory
+        await fs.rm(repoPath, { recursive: true, force: true });
+
+      } catch (error) {
+        core.warning(`  Error processing ${repo.name}: ${error.message}`);
       }
+    }
+  } finally {
+    // Clean up temp directory
+    try {
+      await fs.rm(tempDir, { recursive: true, force: true });
     } catch (error) {
-      core.warning(`Failed to fetch languages for ${repo.name}: ${error.message}`);
+      core.warning(`Failed to clean up temp directory: ${error.message}`);
     }
   }
 
-  // Convert to percentage
-  const techStack = {};
-  for (const [language, stats] of Object.entries(languageStats)) {
-    const percentage = (stats.bytes / totalBytes) * 100;
+  // Convert to array and calculate percentages
+  const techStack = [];
+  const totalRepos = repos.length;
+
+  for (const [techName, data] of techCounts.entries()) {
+    const percentage = (data.repos.size / totalRepos) * 100;
+
+    // Apply minimum percentage filter
     if (percentage >= minPercentage) {
-      techStack[language] = {
-        name: language,
+      techStack.push({
+        name: data.name,
+        count: data.count,
+        repos: data.repos.size,
         percentage: parseFloat(percentage.toFixed(2)),
-        repos: stats.repos.size,
-        isFramework: false
-      };
+      });
     }
   }
 
   return techStack;
 }
 
-async function detectFrameworks(octokit, repos, username) {
-  const frameworks = {};
-
-  for (const repo of repos) {
-    for (const [filename, patterns] of Object.entries(FRAMEWORK_PATTERNS)) {
-      try {
-        const { data: content } = await octokit.repos.getContent({
-          owner: username,
-          repo: repo.name,
-          path: filename,
-        });
-
-        if (content.type === 'file') {
-          const fileContent = Buffer.from(content.content, 'base64').toString('utf-8');
-
-          for (const [framework, keywords] of Object.entries(patterns)) {
-            for (const keyword of keywords) {
-              if (fileContent.includes(keyword)) {
-                frameworks[framework] = (frameworks[framework] || 0) + 1;
-                break;
-              }
-            }
-          }
-        }
-      } catch (error) {
-        // File doesn't exist or can't be read, skip
-        continue;
-      }
-    }
-  }
-
-  return frameworks;
-}
-
 function sortTechnologies(techStack, sortBy) {
-  const techs = Object.values(techStack);
-
   if (sortBy === 'usage') {
-    return techs.sort((a, b) => {
-      if (a.isFramework !== b.isFramework) {
-        return a.isFramework ? 1 : -1; // Languages first
-      }
-      return b.percentage - a.percentage || b.repos - a.repos;
+    return techStack.sort((a, b) => {
+      // Sort by number of repos, then by count
+      return b.repos - a.repos || b.count - a.count;
     });
   } else {
-    return techs.sort((a, b) => a.name.localeCompare(b.name));
+    return techStack.sort((a, b) => a.name.localeCompare(b.name));
   }
 }
 
@@ -393,11 +405,14 @@ function generateBadges(technologies, style, colors) {
   const badgeLines = [];
 
   for (const tech of technologies) {
+    const techLower = tech.name.toLowerCase();
     const encodedName = encodeURIComponent(tech.name);
-    const color = colors[tech.name] || '000000';
-    const label = tech.isFramework ? `${tech.name}` : tech.name;
+    const color = colors[techLower] || colors[tech.name] || '000000';
 
-    const badge = `![${tech.name}](https://img.shields.io/badge/${encodedName}-${color}?style=${style}&logo=${encodedName.toLowerCase()}&logoColor=white)`;
+    // Try to get a logo name (remove special characters and spaces)
+    const logoName = techLower.replace(/[.\s]/g, '');
+
+    const badge = `![${tech.name}](https://img.shields.io/badge/${encodedName}-${color}?style=${style}&logo=${logoName}&logoColor=white)`;
     badgeLines.push(badge);
   }
 
