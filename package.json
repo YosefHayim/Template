@@ -4,7 +4,7 @@
   "description": "Automatically sync your tech stack badges in your GitHub profile README based on detected technologies",
   "main": "dist/index.js",
   "scripts": {
-    "build": "ncc build src/index.js -o dist --source-map --license licenses.txt",
+    "build": "ncc build src/index.js -o dist --source-map --license licenses.txt --target es2020 && node fix-import-meta.js",
     "test": "jest",
     "lint": "eslint src/**/*.js"
   },
