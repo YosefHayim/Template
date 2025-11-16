@@ -7,9 +7,6 @@ const path = require('path');
 const { execSync } = require('child_process');
 const os = require('os');
 
-// Load stack-analyser rules
-require('@specfy/stack-analyser/dist/autoload');
-
 // Technology color mappings for badges
 const TECH_COLORS = {
   // Programming Languages
