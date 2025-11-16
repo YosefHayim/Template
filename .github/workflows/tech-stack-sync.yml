@@ -1,0 +1,43 @@
+name: Sync Tech Stack Badges
+
+on:
+  # Run every 12 hours
+  schedule:
+    - cron: '0 */12 * * *'
+
+  # Allow manual trigger
+  workflow_dispatch:
+
+  # Run on push to main (optional - remove if you don't want this)
+  push:
+    branches:
+      - main
+
+jobs:
+  update-tech-stack:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update Tech Stack Badges
+        uses: YosefHayim/readme-profile-tech-stack-sync@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          readme_path: 'README.md'
+          start_marker: '<!-- TECH-STACK:START -->'
+          end_marker: '<!-- TECH-STACK:END -->'
+          include_private: false
+          min_percentage: 1
+          badge_style: 'for-the-badge'
+          sort_by: 'usage'
+          max_badges: 0
+          include_frameworks: true
+          exclude_languages: 'HTML,CSS'
+          commit_message: 'chore: update tech stack badges'

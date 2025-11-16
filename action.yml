@@ -1,0 +1,95 @@
+name: 'README Profile Tech Stack Sync'
+description: 'Automatically sync your tech stack badges in your GitHub profile README based on detected technologies across all your repositories'
+author: 'YosefHayim'
+branding:
+  icon: 'code'
+  color: 'blue'
+
+inputs:
+  github_token:
+    description: 'GitHub token for API access (use secrets.GITHUB_TOKEN or PAT for private repos)'
+    required: true
+
+  readme_path:
+    description: 'Path to your README file (e.g., README.md or profile/README.md)'
+    required: false
+    default: 'README.md'
+
+  start_marker:
+    description: 'Start marker comment in README (e.g., <!-- TECH-STACK:START -->)'
+    required: false
+    default: '<!-- TECH-STACK:START -->'
+
+  end_marker:
+    description: 'End marker comment in README (e.g., <!-- TECH-STACK:END -->)'
+    required: false
+    default: '<!-- TECH-STACK:END -->'
+
+  include_private:
+    description: 'Include private repositories in the scan (requires PAT with repo scope)'
+    required: false
+    default: 'false'
+
+  min_percentage:
+    description: 'Minimum percentage of code in a language to include it (0-100)'
+    required: false
+    default: '1'
+
+  badge_style:
+    description: 'Style of badges: flat, flat-square, plastic, for-the-badge, social'
+    required: false
+    default: 'for-the-badge'
+
+  sort_by:
+    description: 'Sort badges by: usage (percentage), name (alphabetical)'
+    required: false
+    default: 'usage'
+
+  max_badges:
+    description: 'Maximum number of badges to display (0 for unlimited)'
+    required: false
+    default: '0'
+
+  custom_colors:
+    description: 'Custom badge colors in JSON format (e.g., {"JavaScript": "yellow", "Python": "blue"})'
+    required: false
+    default: '{}'
+
+  exclude_languages:
+    description: 'Comma-separated list of languages to exclude (e.g., "HTML,CSS")'
+    required: false
+    default: ''
+
+  include_frameworks:
+    description: 'Detect and include frameworks/libraries (searches package.json, requirements.txt, etc.)'
+    required: false
+    default: 'true'
+
+  commit_message:
+    description: 'Custom commit message for README updates'
+    required: false
+    default: 'chore: update tech stack badges'
+
+  committer_name:
+    description: 'Git committer name'
+    required: false
+    default: 'github-actions[bot]'
+
+  committer_email:
+    description: 'Git committer email'
+    required: false
+    default: 'github-actions[bot]@users.noreply.github.com'
+
+outputs:
+  technologies_found:
+    description: 'JSON array of detected technologies'
+
+  badges_updated:
+    description: 'Boolean indicating if README was updated'
+
+  total_repos_scanned:
+    description: 'Total number of repositories scanned'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
