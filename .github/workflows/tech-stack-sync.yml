@@ -3,7 +3,7 @@ name: Tech Stack Sync
 on:
   schedule:
     # Run daily at midnight UTC
-    - cron: '0 0 * * *'
+    - cron: "0 0 * * *"
   workflow_dispatch: # Allows manual triggering
   push:
     branches:
@@ -25,8 +25,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -41,7 +41,7 @@ jobs:
               per_page: 100,
               sort: 'updated'
             });
-            
+
             // Handle pagination if more than 100 repos
             let allRepos = repos;
             let page = 1;
@@ -56,23 +56,33 @@ jobs:
               allRepos = allRepos.concat(nextPage);
               page++;
             }
-            
+
             const repoList = allRepos.map(repo => ({
               name: repo.name,
               full_name: repo.full_name,
               clone_url: repo.clone_url,
               default_branch: repo.default_branch
             }));
-            
+
             core.setOutput('repos', JSON.stringify(repoList));
             console.log(`Found ${repoList.length} public repositories`);
 
-      - name: Analyze repositories
-        id: analyze
+      - name: Clone repositories
         run: |
+          mkdir -p ./temp-repos
           mkdir -p ./repos-analysis
           echo "${{ steps.get-repos.outputs.repos }}" > repos.json
-          node scripts/analyze-repos.js
+          
+          # Clone each repository
+          echo "${{ steps.get-repos.outputs.repos }}" | jq -r '.[] | "\(.clone_url)|\(.default_branch)|\(.name)"' | while IFS='|' read -r url branch name; do
+            echo "Cloning $name..."
+            git clone --depth 1 --branch "$branch" "$url" "./temp-repos/$name" || echo "Failed to clone $name"
+          done
+
+      - name: Analyze repositories with stack-analyser
+        uses: specfy/stack-analyser@v1
+        continue-on-error: true
+        args: "./temp-repos --output ./repos-analysis/combined-analysis.json"
 
       - name: Aggregate tech stack
         id: aggregate
@@ -94,4 +104,3 @@ jobs:
           git add README.md
           git commit -m "🤖 Auto-update tech stack from all public repositories" || exit 0
           git push
-

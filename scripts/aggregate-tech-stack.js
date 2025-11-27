@@ -11,26 +11,33 @@ const outputFile = join(rootDir, 'aggregated-tech-stack.json');
 
 console.log('Aggregating tech stack from all repositories...');
 
-// Read all analysis files
-const files = readdirSync(analysisDir).filter(f => f.endsWith('.json') && f !== 'summary.json');
-
 const allTechs = new Set();
 const allDependencies = new Set();
 const allLanguages = new Map();
 const repoTechs = new Map(); // Map of repo -> techs
 
-for (const file of files) {
-  try {
-    const filePath = join(analysisDir, file);
-    const data = JSON.parse(readFileSync(filePath, 'utf-8'));
-    
-    // Extract techs from the analysis result
-    const extractTechs = (node) => {
+// Check if we have a combined analysis file from GitHub Action
+const combinedFile = join(analysisDir, 'combined-analysis.json');
+let files = [];
+
+if (existsSync(combinedFile)) {
+  // Use the combined analysis from GitHub Action
+  console.log('Using combined analysis from GitHub Action...');
+  files = [{ path: combinedFile, name: 'combined-analysis.json' }];
+} else {
+  // Fall back to individual files (for local testing)
+  console.log('Using individual analysis files...');
+  files = readdirSync(analysisDir)
+    .filter(f => f.endsWith('.json') && f !== 'summary.json' && f !== 'combined-analysis.json')
+    .map(f => ({ path: join(analysisDir, f), name: f }));
+}
+
+// Extract techs from the analysis result
+const extractTechs = (node, repoName = 'unknown') => {
       if (node.techs && Array.isArray(node.techs)) {
         node.techs.forEach(tech => {
           if (tech) {
             allTechs.add(tech);
-            const repoName = file.replace('.json', '');
             if (!repoTechs.has(repoName)) {
               repoTechs.set(repoName, new Set());
             }
@@ -41,7 +48,6 @@ for (const file of files) {
       
       if (node.tech && node.tech !== null) {
         allTechs.add(node.tech);
-        const repoName = file.replace('.json', '');
         if (!repoTechs.has(repoName)) {
           repoTechs.set(repoName, new Set());
         }
@@ -65,14 +71,31 @@ for (const file of files) {
       }
       
       if (node.childs && Array.isArray(node.childs)) {
-        node.childs.forEach(child => extractTechs(child));
+        // Try to determine repo name from node name or path
+        const childRepoName = node.name || repoName;
+        node.childs.forEach(child => extractTechs(child, childRepoName));
       }
     };
+
+for (const file of files) {
+  try {
+    const data = JSON.parse(readFileSync(file.path, 'utf-8'));
     
-    extractTechs(data);
+    // If this is a combined analysis, extract repo names from child nodes
+    if (file.name === 'combined-analysis.json' && data.childs) {
+      // Process each child (each repo) separately
+      data.childs.forEach((child) => {
+        const repoName = child.name || 'unknown';
+        extractTechs(child, repoName);
+      });
+    } else {
+      // Individual file - use filename as repo name
+      const repoName = file.name.replace('.json', '');
+      extractTechs(data, repoName);
+    }
     
   } catch (error) {
-    console.error(`Error processing ${file}: ${error.message}`);
+    console.error(`Error processing ${file.name}: ${error.message}`);
   }
 }
 
@@ -86,7 +109,7 @@ const sortedLanguages = Array.from(allLanguages.entries())
 // Create aggregated result
 const aggregated = {
   timestamp: new Date().toISOString(),
-  totalRepos: files.length,
+  totalRepos: repoTechs.size || files.length,
   technologies: sortedTechs,
   dependencies: sortedDependencies,
   languages: sortedLanguages,
@@ -105,5 +128,5 @@ console.log(`✅ Aggregation complete!`);
 console.log(`   Technologies found: ${sortedTechs.length}`);
 console.log(`   Dependencies found: ${sortedDependencies.length}`);
 console.log(`   Languages found: ${sortedLanguages.length}`);
-console.log(`   Repositories analyzed: ${files.length}`);
+console.log(`   Repositories analyzed: ${repoTechs.size || files.length}`);
 
