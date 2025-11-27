@@ -1,7 +1,0 @@
-node_modules/
-repos-analysis/
-temp-repos/
-repos.json
-aggregated-tech-stack.json
-*.log
-.DS_Store
