@@ -1,32 +1,29 @@
 {
   "name": "readme-profile-tech-stack-sync",
   "version": "1.0.0",
-  "description": "Automatically sync your tech stack badges in your GitHub profile README based on detected technologies",
-  "main": "dist/index.js",
+  "description": "Automatically sync tech stack from all public GitHub repositories to profile README",
+  "type": "module",
+  "main": "index.js",
   "scripts": {
-    "build": "ncc build src/index.js -o dist --source-map --license licenses.txt --target es2020 && node fix-import-meta.js",
-    "test": "jest",
-    "lint": "eslint src/**/*.js"
+    "analyze": "node scripts/analyze-repos.js",
+    "aggregate": "node scripts/aggregate-tech-stack.js",
+    "update-readme": "node scripts/update-readme.js",
+    "sync": "npm run analyze && npm run aggregate && npm run update-readme",
+    "test": "node scripts/test.js"
   },
   "keywords": [
-    "github-action",
-    "tech-stack",
-    "badges",
+    "github",
     "readme",
+    "tech-stack",
     "automation",
-    "profile"
+    "github-actions"
   ],
-  "author": "YosefHayim",
+  "author": "",
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^1.10.1",
-    "@actions/github": "^6.0.0",
-    "@octokit/rest": "^20.0.2",
-    "@specfy/stack-analyser": "^1.8.4"
+    "@specfy/stack-analyser": "^1.27.3"
   },
   "devDependencies": {
-    "@vercel/ncc": "^0.38.1",
-    "eslint": "^8.57.0",
-    "jest": "^29.7.0"
+    "@types/node": "^20.10.0"
   }
 }
