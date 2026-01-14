@@ -1,422 +1,406 @@
-# Task Master AI - Agent Integration Guide
-
-## Essential Commands
-
-### Core Workflow Commands
-
-```bash
-# Project Setup
-task-master init                                    # Initialize Task Master in current project
-task-master parse-prd .taskmaster/docs/prd.md       # Generate tasks from PRD document
-task-master models --setup                        # Configure AI models interactively
-
-# Daily Development Workflow
-task-master list                                   # Show all tasks with status
-task-master next                                   # Get next available task to work on
-task-master show <id>                             # View detailed task information (e.g., task-master show 1.2)
-task-master set-status --id=<id> --status=done    # Mark task complete
-
-# Task Management
-task-master add-task --prompt="description" --research        # Add new task with AI assistance
-task-master expand --id=<id> --research --force              # Break task into subtasks
-task-master update-task --id=<id> --prompt="changes"         # Update specific task
-task-master update --from=<id> --prompt="changes"            # Update multiple tasks from ID onwards
-task-master update-subtask --id=<id> --prompt="notes"        # Add implementation notes to subtask
-
-# Analysis & Planning
-task-master analyze-complexity --research          # Analyze task complexity
-task-master complexity-report                      # View complexity analysis
-task-master expand --all --research               # Expand all eligible tasks
-
-# Dependencies & Organization
-task-master add-dependency --id=<id> --depends-on=<id>       # Add task dependency
-task-master move --from=<id> --to=<id>                       # Reorganize task hierarchy
-task-master validate-dependencies                            # Check for dependency issues
-task-master generate                                         # Update task markdown files (usually auto-called)
-```
-
-## Key Files & Project Structure
-
-### Core Files
-
-- `.taskmaster/tasks/tasks.json` - Main task data file (auto-managed)
-- `.taskmaster/config.json` - AI model configuration (use `task-master models` to modify)
-- `.taskmaster/docs/prd.md` - Product Requirements Document for parsing (`.md` extension recommended for better editor support)
-- `.taskmaster/tasks/*.txt` - Individual task files (auto-generated from tasks.json)
-- `.env` - API keys for CLI usage
-
-**PRD File Format:** While both `.txt` and `.md` extensions work, **`.md` is recommended** because:
-- Markdown syntax highlighting in editors improves readability
-- Proper rendering when previewing in VS Code, GitHub, or other tools
-- Better collaboration through formatted documentation
-
-### Claude Code Integration Files
-
-- `CLAUDE.md` - Auto-loaded context for Claude Code (this file)
-- `.claude/settings.json` - Claude Code tool allowlist and preferences
-- `.claude/commands/` - Custom slash commands for repeated workflows
-- `.mcp.json` - MCP server configuration (project-specific)
-
-### Directory Structure
-
-```
-project/
-├── .taskmaster/
-│   ├── tasks/              # Task files directory
-│   │   ├── tasks.json      # Main task database
-│   │   ├── task-1.md      # Individual task files
-│   │   └── task-2.md
-│   ├── docs/              # Documentation directory
-│   │   ├── prd.md         # Product requirements (.md recommended)
-│   ├── reports/           # Analysis reports directory
-│   │   └── task-complexity-report.json
-│   ├── templates/         # Template files
-│   │   └── example_prd.md  # Example PRD template (.md recommended)
-│   └── config.json        # AI models & settings
-├── .claude/
-│   ├── settings.json      # Claude Code configuration
-│   └── commands/         # Custom slash commands
-├── .env                  # API keys
-├── .mcp.json            # MCP configuration
-└── CLAUDE.md            # This file - auto-loaded by Claude Code
-```
-
-## MCP Integration
-
-Task Master provides an MCP server that Claude Code can connect to. Configure in `.mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "task-master-ai": {
-      "command": "npx",
-      "args": ["-y", "task-master-ai"],
-      "env": {
-        "ANTHROPIC_API_KEY": "your_key_here",
-        "PERPLEXITY_API_KEY": "your_key_here",
-        "OPENAI_API_KEY": "OPENAI_API_KEY_HERE",
-        "GOOGLE_API_KEY": "GOOGLE_API_KEY_HERE",
-        "XAI_API_KEY": "XAI_API_KEY_HERE",
-        "OPENROUTER_API_KEY": "OPENROUTER_API_KEY_HERE",
-        "MISTRAL_API_KEY": "MISTRAL_API_KEY_HERE",
-        "AZURE_OPENAI_API_KEY": "AZURE_OPENAI_API_KEY_HERE",
-        "OLLAMA_API_KEY": "OLLAMA_API_KEY_HERE"
-      }
-    }
-  }
-}
-```
-
-### Essential MCP Tools
-
-```javascript
-help; // = shows available taskmaster commands
-// Project setup
-initialize_project; // = task-master init
-parse_prd; // = task-master parse-prd
-
-// Daily workflow
-get_tasks; // = task-master list
-next_task; // = task-master next
-get_task; // = task-master show <id>
-set_task_status; // = task-master set-status
-
-// Task management
-add_task; // = task-master add-task
-expand_task; // = task-master expand
-update_task; // = task-master update-task
-update_subtask; // = task-master update-subtask
-update; // = task-master update
-
-// Analysis
-analyze_project_complexity; // = task-master analyze-complexity
-complexity_report; // = task-master complexity-report
-```
-
-## Claude Code Workflow Integration
-
-### Standard Development Workflow
-
-#### 1. Project Initialization
-
-```bash
-# Initialize Task Master
-task-master init
-
-# Create or obtain PRD, then parse it (use .md extension for better editor support)
-task-master parse-prd .taskmaster/docs/prd.md
-
-# Analyze complexity and expand tasks
-task-master analyze-complexity --research
-task-master expand --all --research
-```
-
-If tasks already exist, another PRD can be parsed (with new information only!) using parse-prd with --append flag. This will add the generated tasks to the existing list of tasks..
-
-#### 2. Daily Development Loop
-
-```bash
-# Start each session
-task-master next                           # Find next available task
-task-master show <id>                     # Review task details
-
-# During implementation, check in code context into the tasks and subtasks
-task-master update-subtask --id=<id> --prompt="implementation notes..."
-
-# Complete tasks
-task-master set-status --id=<id> --status=done
-```
-
-#### 3. Multi-Claude Workflows
-
-For complex projects, use multiple Claude Code sessions:
-
-```bash
-# Terminal 1: Main implementation
-cd project && claude
-
-# Terminal 2: Testing and validation
-cd project-test-worktree && claude
-
-# Terminal 3: Documentation updates
-cd project-docs-worktree && claude
-```
-
-### Custom Slash Commands
-
-Create `.claude/commands/taskmaster-next.md`:
-
-```markdown
-Find the next available Task Master task and show its details.
-
-Steps:
-
-1. Run `task-master next` to get the next task
-2. If a task is available, run `task-master show <id>` for full details
-3. Provide a summary of what needs to be implemented
-4. Suggest the first implementation step
-```
-
-Create `.claude/commands/taskmaster-complete.md`:
-
-```markdown
-Complete a Task Master task: $ARGUMENTS
-
-Steps:
-
-1. Review the current task with `task-master show $ARGUMENTS`
-2. Verify all implementation is complete
-3. Run any tests related to this task
-4. Mark as complete: `task-master set-status --id=$ARGUMENTS --status=done`
-5. Show the next available task with `task-master next`
-```
-
-## Tool Allowlist Recommendations
-
-Add to `.claude/settings.json`:
-
-```json
-{
-  "allowedTools": [
-    "Edit",
-    "Bash(task-master *)",
-    "Bash(git commit:*)",
-    "Bash(git add:*)",
-    "Bash(npm run *)",
-    "mcp__task_master_ai__*"
-  ]
-}
-```
-
-## Configuration & Setup
-
-### API Keys Required
-
-At least **one** of these API keys must be configured:
-
-- `ANTHROPIC_API_KEY` (Claude models) - **Recommended**
-- `PERPLEXITY_API_KEY` (Research features) - **Highly recommended**
-- `OPENAI_API_KEY` (GPT models)
-- `GOOGLE_API_KEY` (Gemini models)
-- `MISTRAL_API_KEY` (Mistral models)
-- `OPENROUTER_API_KEY` (Multiple models)
-- `XAI_API_KEY` (Grok models)
-
-An API key is required for any provider used across any of the 3 roles defined in the `models` command.
-
-### Model Configuration
-
-```bash
-# Interactive setup (recommended)
-task-master models --setup
-
-# Set specific models
-task-master models --set-main claude-3-5-sonnet-20241022
-task-master models --set-research perplexity-llama-3.1-sonar-large-128k-online
-task-master models --set-fallback gpt-4o-mini
-```
-
-## Task Structure & IDs
-
-### Task ID Format
-
-- Main tasks: `1`, `2`, `3`, etc.
-- Subtasks: `1.1`, `1.2`, `2.1`, etc.
-- Sub-subtasks: `1.1.1`, `1.1.2`, etc.
-
-### Task Status Values
-
-- `pending` - Ready to work on
-- `in-progress` - Currently being worked on
-- `done` - Completed and verified
-- `deferred` - Postponed
-- `cancelled` - No longer needed
-- `blocked` - Waiting on external factors
-
-### Task Fields
-
-```json
-{
-  "id": "1.2",
-  "title": "Implement user authentication",
-  "description": "Set up JWT-based auth system",
-  "status": "pending",
-  "priority": "high",
-  "dependencies": ["1.1"],
-  "details": "Use bcrypt for hashing, JWT for tokens...",
-  "testStrategy": "Unit tests for auth functions, integration tests for login flow",
-  "subtasks": []
-}
-```
-
-## Claude Code Best Practices with Task Master
-
-### Context Management
-
-- Use `/clear` between different tasks to maintain focus
-- This CLAUDE.md file is automatically loaded for context
-- Use `task-master show <id>` to pull specific task context when needed
-
-### Iterative Implementation
-
-1. `task-master show <subtask-id>` - Understand requirements
-2. Explore codebase and plan implementation
-3. `task-master update-subtask --id=<id> --prompt="detailed plan"` - Log plan
-4. `task-master set-status --id=<id> --status=in-progress` - Start work
-5. Implement code following logged plan
-6. `task-master update-subtask --id=<id> --prompt="what worked/didn't work"` - Log progress
-7. `task-master set-status --id=<id> --status=done` - Complete task
-
-### Complex Workflows with Checklists
-
-For large migrations or multi-step processes:
-
-1. Create a markdown PRD file describing the new changes: `touch task-migration-checklist.md` (prds can be .txt or .md)
-2. Use Taskmaster to parse the new prd with `task-master parse-prd --append` (also available in MCP)
-3. Use Taskmaster to expand the newly generated tasks into subtasks. Consdier using `analyze-complexity` with the correct --to and --from IDs (the new ids) to identify the ideal subtask amounts for each task. Then expand them.
-4. Work through items systematically, checking them off as completed
-5. Use `task-master update-subtask` to log progress on each task/subtask and/or updating/researching them before/during implementation if getting stuck
-
-### Git Integration
-
-Task Master works well with `gh` CLI:
-
-```bash
-# Create PR for completed task
-gh pr create --title "Complete task 1.2: User authentication" --body "Implements JWT auth system as specified in task 1.2"
-
-# Reference task in commits
-git commit -m "feat: implement JWT auth (task 1.2)"
-```
-
-### Parallel Development with Git Worktrees
-
-```bash
-# Create worktrees for parallel task development
-git worktree add ../project-auth feature/auth-system
-git worktree add ../project-api feature/api-refactor
-
-# Run Claude Code in each worktree
-cd ../project-auth && claude    # Terminal 1: Auth work
-cd ../project-api && claude     # Terminal 2: API work
-```
-
-## Troubleshooting
-
-### AI Commands Failing
-
-```bash
-# Check API keys are configured
-cat .env                           # For CLI usage
-
-# Verify model configuration
-task-master models
-
-# Test with different model
-task-master models --set-fallback gpt-4o-mini
-```
-
-### MCP Connection Issues
-
-- Check `.mcp.json` configuration
-- Verify Node.js installation
-- Use `--mcp-debug` flag when starting Claude Code
-- Use CLI as fallback if MCP unavailable
-
-### Task File Sync Issues
-
-```bash
-# Regenerate task files from tasks.json
-task-master generate
-
-# Fix dependency issues
-task-master fix-dependencies
-```
-
-DO NOT RE-INITIALIZE. That will not do anything beyond re-adding the same Taskmaster core files.
-
-## Important Notes
-
-### AI-Powered Operations
-
-These commands make AI calls and may take up to a minute:
-
-- `parse_prd` / `task-master parse-prd`
-- `analyze_project_complexity` / `task-master analyze-complexity`
-- `expand_task` / `task-master expand`
-- `expand_all` / `task-master expand --all`
-- `add_task` / `task-master add-task`
-- `update` / `task-master update`
-- `update_task` / `task-master update-task`
-- `update_subtask` / `task-master update-subtask`
-
-### File Management
-
-- Never manually edit `tasks.json` - use commands instead
-- Never manually edit `.taskmaster/config.json` - use `task-master models`
-- Task markdown files in `tasks/` are auto-generated
-- Run `task-master generate` after manual changes to tasks.json
-
-### Claude Code Session Management
-
-- Use `/clear` frequently to maintain focused context
-- Create custom slash commands for repeated Task Master workflows
-- Configure tool allowlist to streamline permissions
-- Use headless mode for automation: `claude -p "task-master next"`
-
-### Multi-Task Updates
-
-- Use `update --from=<id>` to update multiple future tasks
-- Use `update-task --id=<id>` for single task updates
-- Use `update-subtask --id=<id>` for implementation logging
-
-### Research Mode
-
-- Add `--research` flag for research-based AI enhancement
-- Requires a research model API key like Perplexity (`PERPLEXITY_API_KEY`) in environment
-- Provides more informed task creation and updates
-- Recommended for complex technical tasks
+# Project Intelligence Guide for AI Agents
+
+> **Purpose**: Make AI coding assistants behave like senior engineers who understand this codebase, reuse existing patterns, and follow established conventions.
+>
+> **Standard**: This file follows the [agents.md](https://agents.md/) universal specification, supported by Claude Code, Cursor, Cline, Gemini CLI, and 20+ AI tools.
 
 ---
 
-_This guide ensures Claude Code has immediate access to Task Master's essential functionality for agentic development workflows._
+## Quick Navigation
+
+- [Project Architecture](#project-architecture)
+- [Anti-Duplication Rules](#anti-duplication-rules-critical)
+- [Code Style & Patterns](#code-style--patterns)
+- [Bug Understanding Protocol](#bug-understanding-protocol)
+- [Self-Improvement Protocol](#self-improvement-protocol)
+- [Task Master Workflow](#task-master-workflow)
+
+---
+
+## Project Architecture
+
+### Directory Structure
+
+<!-- TEMPLATE: This is the recommended structure. Customize for your project. -->
+
+```
+{{PROJECT_NAME}}/
+├── src/
+│   ├── components/        # Reusable UI components
+│   ├── hooks/             # Custom React/framework hooks
+│   ├── utils/             # Helper functions and utilities
+│   ├── lib/               # Third-party integrations
+│   ├── services/          # API calls and business logic
+│   └── types/             # TypeScript type definitions
+├── tests/                 # Test files (mirror src/ structure)
+├── docs/
+│   └── PROJECT_RULES.md   # Project-specific patterns (YOU CUSTOMIZE THIS)
+├── .taskmaster/           # Task Master AI configuration
+└── AGENTS.md              # This file - AI agent instructions
+```
+
+### Key Files Reference
+
+| File | Purpose | When to Check |
+|------|---------|---------------|
+| `docs/PROJECT_RULES.md` | Project-specific patterns & conventions | Before implementing ANY feature |
+| `src/components/index.ts` | Component exports registry | Before creating new components |
+| `src/utils/index.ts` | Utility function exports | Before creating helper functions |
+| `src/types/index.ts` | Shared TypeScript types | Before defining new types |
+| `CHANGELOG.md` | Version history | After completing features |
+
+---
+
+## Anti-Duplication Rules (CRITICAL)
+
+> **Philosophy**: Every line of duplicated code is a future bug waiting to happen.
+> Senior engineers don't copy-paste; they abstract and reuse.
+
+### Mandatory Pre-Implementation Checklist
+
+Before writing ANY new code, complete this checklist:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  MANDATORY SEARCH CHECKLIST                                     │
+│                                                                 │
+│  [ ] Search for existing components in src/components/          │
+│  [ ] Search for similar utilities in src/utils/ and src/lib/    │
+│  [ ] Check type definitions in src/types/                       │
+│  [ ] Review docs/PROJECT_RULES.md for established patterns      │
+│  [ ] Search codebase for similar functionality                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Search Commands
+
+```bash
+# Find similar components
+grep -ri "ComponentName" src/components/
+find src/components -name "*.tsx" | xargs grep -l "similar-keyword"
+
+# Find similar utilities
+grep -r "export function\|export const" src/utils/ src/lib/
+
+# Find similar types
+grep -r "interface\|type " src/types/
+
+# General codebase search
+grep -ri "keyword" src/
+```
+
+### Decision Matrix
+
+| Similarity to Existing | Action |
+|------------------------|--------|
+| 0-30% | Create new (document why) |
+| 30-70% | Consider composition or wrapper |
+| 70-90% | Extend existing with new props/options |
+| 90-100% | **USE EXISTING** - do not create |
+
+### The Reuse Hierarchy
+
+Always prefer options higher in this list:
+
+1. **Use existing** - Exact or near-exact match exists
+2. **Configure existing** - Pass different props/options
+3. **Compose existing** - Combine multiple existing pieces
+4. **Extend existing** - Add new capability to existing code
+5. **Fork and modify** - Copy then customize (document why)
+6. **Create new** - Truly novel requirement (document why)
+
+### Required Documentation for New Code
+
+When creating new components/utilities (options 5-6 above), include:
+
+```typescript
+/**
+ * @description Brief description of what this does
+ * @rationale Why existing code couldn't be used or extended
+ * @see RelatedComponent - for similar functionality
+ */
+```
+
+### The "Three Strikes" Rule
+
+If you find yourself writing similar code for the **third time**:
+
+1. **STOP** - This is now a pattern
+2. **EXTRACT** - Create a reusable abstraction
+3. **DOCUMENT** - Add to `docs/PROJECT_RULES.md`
+4. **REFACTOR** - Update the first two instances
+
+---
+
+## Code Style & Patterns
+
+> **Full Reference**: See `docs/PROJECT_RULES.md` for project-specific patterns.
+> This section provides the template structure.
+
+### Technology Stack
+
+<!-- TEMPLATE: Update in docs/PROJECT_RULES.md -->
+
+| Layer | Technology |
+|-------|------------|
+| Frontend Framework | `{{FRONTEND_FRAMEWORK}}` |
+| Styling | `{{STYLING_SOLUTION}}` |
+| State Management | `{{STATE_MANAGEMENT}}` |
+| Backend Framework | `{{BACKEND_FRAMEWORK}}` |
+| Database | `{{DATABASE}}` |
+| Testing | `{{TEST_FRAMEWORK}}` |
+
+### Naming Conventions
+
+| Type | Convention | Example |
+|------|------------|---------|
+| Components | PascalCase | `UserProfileCard.tsx` |
+| Hooks | camelCase with `use` prefix | `useUserAuth.ts` |
+| Utilities | camelCase | `formatCurrency.ts` |
+| Types/Interfaces | PascalCase | `UserResponse`, `CreateUserInput` |
+| Constants | SCREAMING_SNAKE_CASE | `MAX_RETRY_COUNT` |
+| Files (non-components) | kebab-case | `api-client.ts` |
+
+### Import Order
+
+```typescript
+// 1. External packages
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+
+// 2. Internal aliases (@/)
+import { Button } from '@/components';
+import { useAuth } from '@/hooks';
+
+// 3. Relative imports
+import { formatDate } from './utils';
+import type { UserProps } from './types';
+```
+
+### Anti-Patterns to Avoid
+
+```typescript
+// WRONG: Copy-paste with minor modifications
+const formatUserName = (user) => `${user.firstName} ${user.lastName}`;
+const formatAuthorName = (author) => `${author.firstName} ${author.lastName}`;
+
+// CORRECT: Create reusable utility
+const formatFullName = (person: { firstName: string; lastName: string }) => 
+  `${person.firstName} ${person.lastName}`;
+```
+
+---
+
+## Bug Understanding Protocol
+
+> **Philosophy**: A bug fix that doesn't understand the root cause is just another bug waiting to resurface.
+
+### Before Fixing ANY Bug
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  BUG ANALYSIS CHECKLIST                                         │
+│                                                                 │
+│  1. REPRODUCE: Can you consistently trigger the bug?            │
+│  2. ISOLATE: What is the minimal code path that causes it?      │
+│  3. UNDERSTAND: WHY does this code behave unexpectedly?         │
+│  4. ROOT CAUSE: Is this a symptom or the actual problem?        │
+│  5. IMPACT: What else might be affected by this fix?            │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### The "5 Whys" Technique
+
+Before implementing a fix, ask "why" five times:
+
+```
+Bug: User sees stale data after update
+
+Why 1: The UI doesn't refresh after mutation
+Why 2: The cache isn't invalidated after the API call
+Why 3: The mutation doesn't call queryClient.invalidateQueries()
+Why 4: The developer copied from another mutation that didn't need invalidation
+Why 5: There's no standard pattern documented for mutations
+
+ROOT CAUSE: Missing mutation pattern in PROJECT_RULES.md
+FIX: Add pattern + fix this instance + audit other mutations
+```
+
+### Bug Classification
+
+| Type | Symptoms | Investigation Focus |
+|------|----------|---------------------|
+| **Logic Error** | Wrong output for valid input | Trace data flow, check conditionals |
+| **State Error** | Inconsistent UI/data | Check state mutations, race conditions |
+| **Timing Error** | Works sometimes, fails others | Check async operations, dependencies |
+| **Data Error** | Fails with specific data | Check edge cases, validation |
+| **Integration Error** | Fails at boundaries | Check API contracts, type mismatches |
+
+### Fix Quality Categories
+
+| Category | Quality | Example |
+|----------|---------|---------|
+| **Symptom Fix** | Avoid | Adding `!important` to override CSS |
+| **Local Fix** | Sometimes OK | Fixing one broken function |
+| **Pattern Fix** | Preferred | Fixing the pattern + all instances |
+| **Architectural Fix** | Best | Preventing the bug class entirely |
+
+### Post-Fix Requirements
+
+After fixing a bug:
+
+1. **Add regression test** - Prevent it from returning
+2. **Audit similar code** - Find other instances: `grep -ri "similar-pattern" src/`
+3. **Update docs** - If pattern was unclear, update `PROJECT_RULES.md`
+4. **Log in task** - Use `task-master update-subtask` to document findings
+
+---
+
+## Self-Improvement Protocol
+
+### When to Update PROJECT_RULES.md
+
+You are **authorized and encouraged** to update `docs/PROJECT_RULES.md` when:
+
+- [ ] You discover a pattern used 3+ times that isn't documented
+- [ ] You find a better way to do something already documented
+- [ ] You encounter a bug that could be prevented by a rule
+- [ ] You make an architectural decision that affects future code
+- [ ] A new library or tool is adopted
+
+### Update Process
+
+1. **Identify the pattern** - What should be standardized?
+2. **Find examples** - Where is this pattern already used?
+3. **Document clearly** - Include DO and DON'T examples
+4. **Cross-reference** - Link to related patterns
+
+### Always Update CHANGELOG.md
+
+After completing a feature or significant fix:
+
+```markdown
+## [Unreleased]
+
+### Added
+- New UserProfile component with avatar support (#task-id)
+
+### Changed
+- Refactored Button to support icon prop (#task-id)
+
+### Fixed
+- Cache invalidation in user mutations (#task-id)
+```
+
+---
+
+## Task Master Workflow
+
+> **Full Reference**: See `.taskmaster/CLAUDE.md` for complete Task Master documentation.
+
+### Quick Commands
+
+```bash
+# Start your day
+task-master next                    # What should I work on?
+task-master show <id>               # Get full context
+
+# During implementation
+task-master update-subtask --id=<id> --prompt="Found that..."
+
+# Complete work
+task-master set-status --id=<id> --status=done
+```
+
+### Integration with Anti-Duplication
+
+Before starting ANY task:
+
+1. Run `task-master show <id>` to understand requirements
+2. **Search codebase** for existing similar implementations
+3. Log findings with `task-master update-subtask`
+4. Only then begin implementation
+
+### MCP Tools (Preferred over CLI)
+
+```javascript
+// Project setup
+initialize_project    // = task-master init
+parse_prd            // = task-master parse-prd
+
+// Daily workflow  
+get_tasks            // = task-master list
+next_task            // = task-master next
+get_task             // = task-master show <id>
+set_task_status      // = task-master set-status
+
+// Task management
+expand_task          // = task-master expand
+update_subtask       // = task-master update-subtask
+```
+
+---
+
+## Agent-Specific Notes
+
+### Claude Code
+- AGENTS.md and CLAUDE.md auto-load into context
+- Use `/clear` between unrelated tasks
+- MCP tools preferred over CLI commands
+
+### Cursor
+- Rules in `.cursor/rules/` auto-load based on globs
+- Use `@file` to reference specific files
+- MDC format for custom rules
+
+### Cline
+- Rules in `.clinerules/` auto-load
+- Markdown format for rules
+- Same MCP tools as Claude Code
+
+### Gemini CLI
+- See `GEMINI.md` for specific features
+- Uses Google Search for research
+- No custom slash commands supported
+
+---
+
+## Quick Decision Trees
+
+### "Should I create a new component?"
+
+```
+Does similar component exist?
+├── Yes → Can it be extended with props?
+│         ├── Yes → EXTEND existing
+│         └── No → Is it 70%+ similar?
+│                  ├── Yes → REFACTOR to be generic
+│                  └── No → CREATE new (document why)
+└── No → CREATE new (add to index.ts)
+```
+
+### "Should I create a new utility?"
+
+```
+Does similar function exist?
+├── Yes → Same signature?
+│         ├── Yes → USE existing
+│         └── No → Can existing accept options?
+│                  ├── Yes → EXTEND existing
+│                  └── No → CREATE new (different name)
+└── No → CREATE new (add to index.ts)
+```
+
+### "How should I fix this bug?"
+
+```
+Is this a symptom or root cause?
+├── Symptom → Find root cause first
+└── Root cause → Is this a pattern problem?
+                 ├── Yes → Fix pattern + all instances + update docs
+                 └── No → Fix locally + add regression test
+```
+
+---
+
+*This file is the source of truth for AI agent instructions. Update this file when adding or modifying agent guidance.*

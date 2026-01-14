@@ -1,6 +1,22 @@
-# Gemini CLI-Specific Instructions
+# Gemini CLI Instructions
 
-> **Note:** This file works alongside `AGENTS.md` (generic AI agent instructions). AGENTS.md contains the core Task Master commands and workflows for all AI agents. This file contains only Gemini CLI-specific features and integrations.
+> **Note:** This file works alongside `AGENTS.md` (universal AI agent instructions). AGENTS.md contains the core intelligence rules for reuse, code style, and bug understanding. This file contains Gemini CLI-specific features and integrations.
+
+## Core Intelligence Rules
+
+**Read `AGENTS.md` first** - It contains critical rules for:
+- Anti-duplication (search before creating)
+- Code style patterns  
+- Bug understanding protocol
+- Self-improvement guidelines
+
+## Project-Specific Patterns
+
+**Read `docs/PROJECT_RULES.md`** for project-specific:
+- Technology stack choices
+- Component patterns
+- Service patterns
+- Testing conventions
 
 ## MCP Configuration for Gemini CLI
 
@@ -93,18 +109,52 @@ task-master models --set-fallback gemini-1.5-flash
 task-master models --set-research perplexity-llama-3.1-sonar-large-128k-online
 ```
 
+## Task Master Quick Reference
+
+### Essential Commands
+
+```bash
+# Daily workflow
+task-master list                                   # Show all tasks
+task-master next                                   # Get next task to work on
+task-master show <id>                              # View task details
+task-master set-status --id=<id> --status=done     # Mark complete
+
+# Task management
+task-master expand --id=<id> --research            # Break into subtasks
+task-master update-subtask --id=<id> --prompt="notes"  # Log progress
+
+# Project setup
+task-master init                                   # Initialize project
+task-master parse-prd <file>                       # Generate tasks from PRD
+```
+
+### MCP Tools
+
+```javascript
+// Equivalent MCP tools (when MCP connected)
+get_tasks            // = task-master list
+next_task            // = task-master next
+get_task             // = task-master show <id>
+set_task_status      // = task-master set-status
+expand_task          // = task-master expand
+update_subtask       // = task-master update-subtask
+```
+
 ## Your Role with Gemini CLI
 
-As a Gemini CLI assistant with Task Master:
+As a Gemini CLI assistant with this project:
 
-1. **Use MCP tools naturally** - They integrate transparently in conversation
-2. **Reference files with @** - Leverage Gemini's file inclusion
-3. **Save checkpoints** - Offer to save state after significant progress
-4. **Monitor usage** - Remind users about `/stats` for long sessions
-5. **Use Google Search** - Leverage search grounding for research
+1. **Check AGENTS.md first** - Follow anti-duplication and reuse rules
+2. **Check PROJECT_RULES.md** - Follow project-specific patterns
+3. **Use MCP tools naturally** - They integrate transparently in conversation
+4. **Save checkpoints** - Offer to save state after significant progress
+5. **Monitor usage** - Remind users about `/stats` for long sessions
+6. **Use Google Search** - Leverage search grounding for research
+7. **Update docs** - Improve PROJECT_RULES.md when you discover patterns
 
-**Key Principle:** Focus on natural conversation. Task Master MCP tools work seamlessly with Gemini CLI's interface.
+**Key Principle:** Focus on natural conversation while behaving like a senior engineer who knows this codebase. Task Master MCP tools work seamlessly with Gemini CLI's interface.
 
 ---
 
-*See AGENTS.md for complete Task Master commands, workflows, and best practices.*
+*See AGENTS.md for complete anti-duplication rules, code style patterns, and bug understanding protocol.*
