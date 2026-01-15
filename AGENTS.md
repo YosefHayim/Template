@@ -13,6 +13,7 @@
 - [Code Style & Patterns](#code-style--patterns)
 - [Bug Understanding Protocol](#bug-understanding-protocol)
 - [Self-Improvement Protocol](#self-improvement-protocol)
+- [Progress Tracking Protocol](#progress-tracking-protocol-mandatory)
 - [Task Master Workflow](#task-master-workflow)
 
 ---
@@ -43,6 +44,7 @@
 
 | File | Purpose | When to Check |
 |------|---------|---------------|
+| `progress-project.md` | **Single source of truth** for project state | **After EVERY task completion** |
 | `docs/PROJECT_RULES.md` | Project-specific patterns & conventions | Before implementing ANY feature |
 | `src/components/index.ts` | Component exports registry | Before creating new components |
 | `src/utils/index.ts` | Utility function exports | Before creating helper functions |
@@ -291,6 +293,108 @@ After completing a feature or significant fix:
 ### Fixed
 - Cache invalidation in user mutations (#task-id)
 ```
+
+---
+
+## Progress Tracking Protocol (MANDATORY)
+
+> **CRITICAL**: `progress-project.md` is the **single source of truth** for project state and context.
+> Updates are **MANDATORY** after every task completion. No exceptions.
+
+### Why This Matters
+
+- Ensures continuity across sessions and agents
+- Provides instant context for any agent starting work
+- Tracks what's done, what's pending, and what's blocked
+- Eliminates redundant work by documenting completed features
+
+### When to Update progress-project.md
+
+You **MUST** update `progress-project.md`:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  MANDATORY UPDATE TRIGGERS                                      │
+│                                                                 │
+│  [x] After completing ANY task (no matter how small)            │
+│  [x] After implementing a new feature                           │
+│  [x] After fixing a bug                                         │
+│  [x] After making architectural decisions                       │
+│  [x] After discovering blockers or issues                       │
+│  [x] At the end of every work session                           │
+│  [x] When starting work (update "In Progress" section)          │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### What to Update
+
+| Section | When to Update | What to Include |
+|---------|----------------|-----------------|
+| **Current Features** | New feature completed | Feature name, status, brief description |
+| **Completed Work** | After every task | Date, task description, implementation notes |
+| **Pending Tasks** | New tasks identified | Priority, task description, context |
+| **In Progress** | Starting/ending work | Task name, start date, agent name |
+| **Repository Structure** | Files/folders added | Updated directory tree |
+| **Technical Decisions** | Architecture choices | Decision, rationale, date |
+| **Known Issues** | Bugs discovered | Issue, severity, status |
+| **Session Notes** | End of session | What was done, what's next |
+
+### Update Format
+
+When adding to **Completed Work**, use this format:
+
+```markdown
+### YYYY-MM-DD
+
+- [x] Task description - Brief notes on what was done
+- [x] Another task - Implementation details or relevant context
+```
+
+### Pre-Task Checklist
+
+Before starting ANY work:
+
+1. **Read `progress-project.md`** - Understand current state
+2. **Check "In Progress" section** - Avoid duplicate work
+3. **Update "In Progress"** - Mark what you're starting
+4. **Review "Pending Tasks"** - Prioritize appropriately
+
+### Post-Task Checklist
+
+After completing ANY work:
+
+1. **Update "Completed Work"** - Log what you did with date
+2. **Update "Current Features"** - If new feature was added
+3. **Clear "In Progress"** - Remove completed task
+4. **Update "Session Notes"** - Context for next session
+5. **Update other sections** - As applicable (issues, decisions, etc.)
+
+### Example Update Flow
+
+```bash
+# 1. Starting work - Update In Progress
+| Task | Started | Agent | Notes |
+|------|---------|-------|-------|
+| Implement user login | 2024-01-15 | Claude | JWT-based auth |
+
+# 2. After completion - Update Completed Work
+### 2024-01-15
+
+- [x] Implement user login endpoint - POST /api/auth/login with JWT tokens
+- [x] Add password hashing - Using bcrypt with salt rounds=12
+
+# 3. Clear In Progress and update Features
+| Feature | Status | Description |
+|---------|--------|-------------|
+| User Authentication | Complete | JWT-based auth with bcrypt hashing |
+```
+
+### Enforcement
+
+- **This is not optional** - All agents must comply
+- **No task is too small** - Even config changes get logged
+- **Context is king** - Future sessions depend on accurate tracking
+- **When in doubt, update** - Over-documentation beats under-documentation
 
 ---
 
