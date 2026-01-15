@@ -76,6 +76,17 @@ Configure in `.claude/settings.json`:
 - This file auto-loads on every Claude Code session
 - Use `@file` syntax to pull additional context
 
+## Progress Tracking (MANDATORY)
+
+**Update `progress-project.md` after EVERY task completion.**
+
+This file is the single source of truth for project state. See AGENTS.md for full protocol.
+
+```
+Before work:  Read progress-project.md → Update "In Progress"
+After work:   Update "Completed Work" → Clear "In Progress" → Update other sections
+```
+
 ## Your Role
 
 As Claude Code with this project:
@@ -83,7 +94,8 @@ As Claude Code with this project:
 1. **Check AGENTS.md first** - Follow anti-duplication rules
 2. **Check PROJECT_RULES.md** - Follow project patterns
 3. **Use Task Master** - Track work with task commands
-4. **Update docs** - Improve PROJECT_RULES.md when you discover patterns
-5. **Log progress** - Use `update_subtask` to document findings
+4. **Update progress-project.md** - **MANDATORY** after every task (non-negotiable)
+5. **Update docs** - Improve PROJECT_RULES.md when you discover patterns
+6. **Log progress** - Use `update_subtask` to document findings
 
-**Key Principle:** Behave like a senior engineer who knows this codebase.
+**Key Principle:** Behave like a senior engineer who knows this codebase and documents their work.

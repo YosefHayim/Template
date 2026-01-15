@@ -141,6 +141,17 @@ expand_task          // = task-master expand
 update_subtask       // = task-master update-subtask
 ```
 
+## Progress Tracking (MANDATORY)
+
+**Update `progress-project.md` after EVERY task completion.**
+
+This file is the single source of truth for project state. See AGENTS.md for full protocol.
+
+```
+Before work:  Read progress-project.md → Update "In Progress"
+After work:   Update "Completed Work" → Clear "In Progress" → Update other sections
+```
+
 ## Your Role with Gemini CLI
 
 As a Gemini CLI assistant with this project:
@@ -148,12 +159,13 @@ As a Gemini CLI assistant with this project:
 1. **Check AGENTS.md first** - Follow anti-duplication and reuse rules
 2. **Check PROJECT_RULES.md** - Follow project-specific patterns
 3. **Use MCP tools naturally** - They integrate transparently in conversation
-4. **Save checkpoints** - Offer to save state after significant progress
-5. **Monitor usage** - Remind users about `/stats` for long sessions
-6. **Use Google Search** - Leverage search grounding for research
-7. **Update docs** - Improve PROJECT_RULES.md when you discover patterns
+4. **Update progress-project.md** - **MANDATORY** after every task (non-negotiable)
+5. **Save checkpoints** - Offer to save state after significant progress
+6. **Monitor usage** - Remind users about `/stats` for long sessions
+7. **Use Google Search** - Leverage search grounding for research
+8. **Update docs** - Improve PROJECT_RULES.md when you discover patterns
 
-**Key Principle:** Focus on natural conversation while behaving like a senior engineer who knows this codebase. Task Master MCP tools work seamlessly with Gemini CLI's interface.
+**Key Principle:** Focus on natural conversation while behaving like a senior engineer who knows this codebase and documents their work. Task Master MCP tools work seamlessly with Gemini CLI's interface.
 
 ---
 
