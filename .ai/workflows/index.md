@@ -15,6 +15,7 @@ Workflows describe HOW to do things, not WHAT patterns to use. They cover the pr
 | [Task Management](./task-management.md) | Task Master commands, MCP tools, CLI reference |
 | [Development Cycle](./development-cycle.md) | Daily workflow, iteration process, subtask implementation |
 | [Git Conventions](./git-conventions.md) | Commit messages, branch naming, PR workflow |
+| [Progress Tracking](./progress-tracking.md) | Mandatory progress updates to `progress-project.md` |
 
 ---
 
@@ -42,8 +43,9 @@ Workflows describe HOW to do things, not WHAT patterns to use. They cover the pr
 
 1. Run tests and lint
 2. Update documentation if patterns discovered
-3. Commit with conventional commit message
-4. Mark task complete
+3. **Update `progress-project.md`** (MANDATORY)
+4. Commit with conventional commit message
+5. Mark task complete
 
 ---
 

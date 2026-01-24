@@ -8,8 +8,8 @@
 ## Project Overview
 
 **Project Name**: Template
-**Last Updated**: 2026-01-15
-**Updated By**: Claude (Opus 4.5)
+**Last Updated**: 2026-01-24
+**Updated By**: Claude (Sisyphus)
 
 ---
 
@@ -17,14 +17,23 @@
 
 | Feature | Status | Description |
 |---------|--------|-------------|
-| AI Agent Intelligence System | Complete | Universal agent instructions via AGENTS.md |
+| Hierarchical Book Architecture | Complete | Centralized `.ai/` directory with single source of truth |
+| AI Agent Intelligence System | Complete | Universal agent instructions via AGENTS.md → .ai/ |
 | Progress Tracking Protocol | Complete | Mandatory tracking via progress-project.md |
 | Task Master Integration | Complete | Task management workflow for all agents |
-| Multi-Agent Support | Complete | Rules for Claude, Gemini, Cline, Cursor |
+| Multi-Agent Support | Complete | Rules for Claude, Gemini, Cline, Cursor, VS Code |
 
 ---
 
 ## Completed Work
+
+### 2026-01-24
+
+- [x] Migrated to Hierarchical Book Architecture - Eliminated ~300KB of duplicated content across tool-specific files
+- [x] Created `.ai/` centralized structure - index.md router with standards/, workflows/, patterns/, tools/, project/ sections
+- [x] Replaced tool-specific duplicates with minimal loaders - Each tool now has a `_loader` file pointing to `.ai/`
+- [x] Updated root files (AGENTS.md, CLAUDE.md, GEMINI.md) - Now route to `.ai/` structure
+- [x] Archived old files and deleted after verification - Clean repository with no duplication
 
 ### 2026-01-15
 
@@ -58,28 +67,30 @@
 
 ```
 Template/
+├── .ai/                        # ⭐ SINGLE SOURCE OF TRUTH for all AI instructions
+│   ├── index.md                # Central navigation router
+│   ├── standards/              # Universal principles (code-quality, debugging, docs)
+│   ├── workflows/              # Development processes (task-mgmt, dev-cycle, git)
+│   ├── patterns/               # Implementation guides (frontend/, backend/, testing/)
+│   ├── tools/                  # AI tool configurations (claude, cursor, cline, etc.)
+│   └── project/                # Project-specific (tech-stack, discovered-patterns)
 ├── .clinerules/
-│   ├── cline_rules.md
-│   ├── dev_workflow.md
-│   ├── progress_tracking.md    # NEW: Progress tracking rule
-│   ├── self_improve.md
-│   └── taskmaster.md
+│   └── _loader.md              # Points to .ai/
 ├── .cursor/
 │   ├── mcp.json
 │   └── rules/
-│       ├── cursor_rules.mdc
-│       ├── progress_tracking.mdc  # NEW: Progress tracking rule
-│       ├── self_improve.mdc
-│       └── taskmaster/
+│       ├── _loader.mdc         # Points to .ai/
+│       └── progress_tracking.mdc
 ├── .github/
 │   └── instructions/
+│       └── _loader.instructions.md  # Points to .ai/
 ├── .taskmaster/
 │   └── CLAUDE.md
 ├── docs/
-│   └── PROJECT_RULES.md
-├── AGENTS.md                   # Universal AI agent instructions
-├── CLAUDE.md                   # Claude Code specific instructions
-├── GEMINI.md                   # Gemini CLI specific instructions
+│   └── PROJECT_RULES.md        # Legacy - consider migrating to .ai/project/
+├── AGENTS.md                   # Entry point → routes to .ai/index.md
+├── CLAUDE.md                   # Entry point → routes to .ai/tools/claude-code.md
+├── GEMINI.md                   # Entry point → routes to .ai/tools/gemini-cli.md
 ├── progress-project.md         # THIS FILE - project state tracker
 └── package.json
 ```
@@ -90,6 +101,8 @@ Template/
 
 | Decision | Rationale | Date |
 |----------|-----------|------|
+| Hierarchical Book Architecture in `.ai/` | Eliminates duplication, provides clear navigation, separates standards from patterns | 2026-01-24 |
+| Minimal loader files for each tool | Tool-specific dirs just point to .ai/, no duplicated content | 2026-01-24 |
 | Mandatory progress tracking | Ensures continuity across sessions, eliminates redundant work, provides instant context | 2026-01-15 |
 | Single source of truth in progress-project.md | Centralizes project state rather than distributing across multiple files | 2026-01-15 |
 | Always-apply rules for Cline/Cursor | Ensures progress tracking applies regardless of which files are being edited | 2026-01-15 |
@@ -114,9 +127,9 @@ Template/
 
 ## Session Notes
 
-_Last session ended with: Completed implementation of mandatory progress tracking protocol across all AI agent configurations._
+_Last session ended with: Completed migration to Hierarchical Book Architecture. All AI instructions now centralized in `.ai/` directory with tool-specific loaders._
 
-_Next session should start with: The template is now ready for use. Users should customize PROJECT_RULES.md and progress-project.md for their specific project._
+_Next session should start with: Consider migrating `docs/PROJECT_RULES.md` content to `.ai/project/` and deleting the legacy file. Also customize `.ai/project/tech-stack.md` placeholders for actual projects._
 
 ---
 
