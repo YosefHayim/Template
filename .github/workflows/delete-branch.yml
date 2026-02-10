@@ -1,0 +1,44 @@
+# Auto-delete branches after PR merge
+# ─────────────────────────────────────
+# Cleans up feature branches automatically when a PR is merged.
+# Skips protected branches (main, dev, staging, production).
+#
+# Template Note:
+#   - Adjust `PROTECTED_BRANCHES` to match your branch protection strategy
+#   - No configuration needed for most projects — works out of the box
+
+name: Auto Delete Merged Branch
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  delete-branch:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Delete merged branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Protected branches that should never be auto-deleted
+          # ── Adjust this list for your project ──
+          PROTECTED_BRANCHES="main master dev develop staging production release"
+
+          for protected in $PROTECTED_BRANCHES; do
+            if [ "$BRANCH_NAME" = "$protected" ]; then
+              echo "⏭️  Skipping protected branch: $BRANCH_NAME"
+              exit 0
+            fi
+          done
+
+          echo "🗑️  Deleting branch: $BRANCH_NAME"
+          gh api -X DELETE "repos/$REPO/git/refs/heads/$BRANCH_NAME" \
+            && echo "✅ Branch '$BRANCH_NAME' deleted successfully" \
+            || echo "⚠️  Branch '$BRANCH_NAME' may have already been deleted"
