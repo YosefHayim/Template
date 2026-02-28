@@ -24,7 +24,7 @@ npm run test:watch
 
 ## Branch Naming
 
-```
+```text
 <type>/<task-id>-<description>
 
 Examples:
@@ -38,14 +38,14 @@ Examples:
 
 Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
-```
+```text
 <type>(<scope>): <description>
 
 Types: feat, fix, docs, style, refactor, perf, test, chore
 ```
 
 Examples:
-```
+```text
 feat(auth): add OAuth2 login flow
 fix(api): handle null response in user endpoint
 docs(readme): update installation steps

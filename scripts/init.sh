@@ -39,6 +39,11 @@ sedi() {
   fi
 }
 
+# Escape special sed replacement characters: \ & |
+escape_sed() {
+  printf '%s' "$1" | sed 's/[\\&|]/\\&/g'
+}
+
 # ── Navigate to project root ──
 cd "$(dirname "$0")/.."
 PROJECT_ROOT="$(pwd)"
@@ -88,7 +93,8 @@ printf "\n"
 replace_in_file() {
   local file="$1"
   local placeholder="$2"
-  local value="$3"
+  local value
+  value="$(escape_sed "$3")"
 
   if [ -f "$file" ]; then
     sedi "s|${placeholder}|${value}|g" "$file"
@@ -131,21 +137,34 @@ fi
 
 # ── Install dependencies ──
 info "Installing dependencies..."
+deps_installed=0
 if command -v bun >/dev/null 2>&1; then
   bun install
+  deps_installed=1
 elif command -v npm >/dev/null 2>&1; then
   npm install
+  deps_installed=1
 else
   warn "Neither bun nor npm found — skipping dependency install"
 fi
-ok "Dependencies installed"
+if [ "$deps_installed" -eq 1 ]; then
+  ok "Dependencies installed"
+fi
 
 # ── Clean up ──
 info "Removing init script..."
-rm -rf scripts/
+rm -f scripts/init.sh
+rmdir scripts 2>/dev/null || true
 
-# Remove the init script entry from package.json
-sedi '/"init":/d' package.json
+# Remove the init script entry from package.json safely using node
+if command -v node >/dev/null 2>&1; then
+  node -e "
+    const fs = require('fs');
+    const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+    delete pkg.scripts.init;
+    fs.writeFileSync('package.json', JSON.stringify(pkg, null, '\t') + '\n');
+  "
+fi
 
 ok "Init script removed"
 

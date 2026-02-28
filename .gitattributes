@@ -29,4 +29,5 @@
 
 # Lock files — don't show in diffs
 package-lock.json -diff
+bun.lock -diff
 bun.lockb binary -diff

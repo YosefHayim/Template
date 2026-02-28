@@ -8,7 +8,7 @@
 
 All external inputs must be validated at system boundaries:
 
-```
+```text
 VALIDATION CHECKLIST
 
 [ ] User inputs (forms, query params, URL params)
@@ -43,7 +43,7 @@ VALIDATION CHECKLIST
 
 ## Secrets Management
 
-```
+```text
 RULES
 
 1. NEVER commit secrets (.env, API keys, tokens, passwords)

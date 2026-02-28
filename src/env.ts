@@ -20,8 +20,19 @@ function getEnvVar(name: string, required = true): string {
 	return value ?? '';
 }
 
+const VALID_NODE_ENVS = ['development', 'test', 'production'] as const;
+type NodeEnv = (typeof VALID_NODE_ENVS)[number];
+
+function getNodeEnv(): NodeEnv {
+	const value = (getEnvVar('NODE_ENV', false) || 'development') as NodeEnv;
+	if (!VALID_NODE_ENVS.includes(value)) {
+		throw new Error(`Invalid NODE_ENV: "${value}". Expected: ${VALID_NODE_ENVS.join(', ')}`);
+	}
+	return value;
+}
+
 export const env = {
-	NODE_ENV: getEnvVar('NODE_ENV', false) || 'development',
+	NODE_ENV: getNodeEnv(),
 	// Add your environment variables here:
 	// DATABASE_URL: getEnvVar('DATABASE_URL'),
 	// API_KEY: getEnvVar('API_KEY'),

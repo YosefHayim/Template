@@ -15,7 +15,7 @@
 
 ## Deployment Checklist
 
-```
+```text
 PRE-DEPLOYMENT
 
 [ ] All tests passing (npm run validate)
@@ -38,7 +38,7 @@ POST-DEPLOYMENT
 
 ## Environment Promotion
 
-```
+```text
 Development → Staging → Production
 
 dev branch  →  PR to main  →  Merge triggers release

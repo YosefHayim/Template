@@ -41,7 +41,7 @@ npm run dev
 
 ## Project Structure
 
-```
+```text
 src/
   app/          # Application routes/pages
   components/   # Reusable UI components

@@ -14,6 +14,9 @@ COPY . .
 
 RUN npm run build
 
+# Prune devDependencies for production
+RUN npm prune --omit=dev
+
 # ── Stage 3: Production ──
 FROM node:22-alpine AS runner
 WORKDIR /app

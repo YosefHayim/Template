@@ -17,7 +17,7 @@
 
 ### Database Queries
 
-```
+```text
 CHECKLIST
 
 [ ] Use indexes for frequently queried columns
@@ -39,7 +39,7 @@ CHECKLIST
 
 ### Caching Strategy
 
-```
+```text
 Cache Decision Tree:
 
 1. Is the data read-heavy? → Consider caching

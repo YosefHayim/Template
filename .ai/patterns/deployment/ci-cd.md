@@ -6,7 +6,7 @@
 
 ## Pipeline Structure
 
-```
+```text
 Push/PR → Lint → Typecheck → Test → Build → Deploy
               ↓        ↓         ↓       ↓
            Biome    tsc       Vitest  Docker
@@ -27,7 +27,7 @@ Push/PR → Lint → Typecheck → Test → Build → Deploy
 
 ## Release Flow
 
-```
+```text
 1. Feature branch → PR to main
 2. CI runs: lint + typecheck + test + Docker build
 3. PR merged → release.yml triggers

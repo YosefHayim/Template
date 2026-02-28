@@ -17,6 +17,10 @@ describe('clamp', () => {
 	it('handles equal min and max', () => {
 		expect(clamp(5, 3, 3)).toBe(3);
 	});
+
+	it('throws when min > max', () => {
+		expect(() => clamp(5, 10, 0)).toThrow(RangeError);
+	});
 });
 
 describe('slugify', () => {

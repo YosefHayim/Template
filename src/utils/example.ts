@@ -2,6 +2,9 @@
  * Clamp a number between a minimum and maximum value.
  */
 export function clamp(value: number, min: number, max: number): number {
+	if (min > max) {
+		throw new RangeError(`clamp: min (${min}) must be less than or equal to max (${max})`);
+	}
 	return Math.min(Math.max(value, min), max);
 }
 
