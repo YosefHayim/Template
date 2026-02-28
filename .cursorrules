@@ -23,3 +23,5 @@ Do not rename variables during destructuring unless there is a real naming colli
 Do not run or attempt to execute applications. Only produce code and indicate when it is ready to test.
 
 TypeScript: never use the 'as type/interface'.
+
+Do not declare variables or files with underscore examples: const _DEV_ or _tests_
