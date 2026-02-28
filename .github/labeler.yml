@@ -1,0 +1,39 @@
+# PR auto-labeler configuration
+# Used by .github/workflows/labeler.yml
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file: '.github/**'
+
+app:
+  - changed-files:
+      - any-glob-to-any-file: 'src/**'
+
+tests:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'tests/**'
+          - 'src/**/*.test.ts'
+          - 'src/**/*.spec.ts'
+
+docs:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '*.md'
+          - 'docs/**'
+          - '.ai/**'
+
+config:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'biome.json'
+          - 'tsconfig*.json'
+          - 'vitest.config.ts'
+          - 'commitlint.config.js'
+
+docker:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'Dockerfile'
+          - 'docker-compose.yml'
+          - '.dockerignore'

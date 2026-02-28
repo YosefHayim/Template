@@ -1,5 +1,9 @@
 # {{PROJECT_NAME}}
 
+[![CI](https://github.com/{{OWNER}}/{{PROJECT_NAME}}/actions/workflows/ci.yml/badge.svg)](https://github.com/{{OWNER}}/{{PROJECT_NAME}}/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Node.js](https://img.shields.io/badge/Node.js-22+-green.svg)](https://nodejs.org/)
+
 > {{PROJECT_DESCRIPTION}}
 
 ---
@@ -11,16 +15,14 @@
 git clone {{REPO_URL}}
 cd {{PROJECT_NAME}}
 
-# Install dependencies
-npm install    # or: bun install
-
-# Set up environment variables
-cp .env.example .env
-# Edit .env with your values
+# Bootstrap project (replaces placeholders, installs deps, creates .env)
+bash scripts/init.sh
 
 # Start development
 npm run dev
 ```
+
+> **Already initialized?** Skip `init.sh` and just run `npm install`.
 
 ## Scripts
 
