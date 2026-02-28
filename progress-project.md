@@ -8,8 +8,8 @@
 ## Project Overview
 
 **Project Name**: Template
-**Last Updated**: 2026-01-24
-**Updated By**: Claude (Sisyphus)
+**Last Updated**: 2026-02-28
+**Updated By**: Claude (Opus)
 
 ---
 
@@ -22,10 +22,56 @@
 | Progress Tracking Protocol | Complete | Mandatory tracking via progress-project.md |
 | Task Master Integration | Complete | Task management workflow for all agents |
 | Multi-Agent Support | Complete | Rules for Claude, Gemini, Cline, Cursor, VS Code |
+| Developer Tooling (Biome) | Complete | Linting + formatting + import sorting via Biome |
+| Pre-commit Hooks | Complete | Husky + lint-staged for quality gates |
+| Testing Framework (Vitest) | Complete | Vitest with coverage, UI mode, path aliases |
+| Docker Support | Complete | Multi-stage Dockerfile + docker-compose for local dev |
+| CI/CD Pipeline | Complete | Lint, typecheck, test, security audit, Docker build |
+| Security Standards | Complete | OWASP, input validation, secrets management docs |
+| Performance Standards | Complete | DB queries, API targets, caching strategy docs |
+| Deployment Patterns | Complete | Docker patterns, CI/CD pipeline documentation |
+| Project Scaffolding | Complete | src/ structure, README, LICENSE, CONTRIBUTING, CHANGELOG |
+| Environment Validation | Complete | src/env.ts for runtime env var validation |
+| Commitlint | Complete | Conventional Commits enforced via commit-msg hook |
+| GitHub Issue Templates | Complete | Form-based bug report + feature request templates |
+| PR Template | Complete | Standard PR template with checklist |
+| CODEOWNERS | Complete | Auto-assign PR reviewers by file path |
+| SECURITY.md | Complete | Responsible vulnerability disclosure policy |
+| Package.json Metadata | Complete | exports, types, repository, files fields |
+| TypeScript Test Config | Complete | tsconfig.test.json for test file IDE support |
+| Docker Dependabot | Complete | Dockerfile base image dependency tracking |
 
 ---
 
 ## Completed Work
+
+### 2026-02-28
+
+- [x] Added Biome for linting + formatting (replaces ESLint + Prettier) with tab indentation
+- [x] Added Vitest testing framework with v8 coverage, 70% thresholds, path aliases
+- [x] Added Husky + lint-staged pre-commit hooks for automatic code quality enforcement
+- [x] Added .editorconfig, .nvmrc (Node 22), .npmrc (exact versions, engine strict)
+- [x] Added Docker support: multi-stage Dockerfile (Alpine, non-root), docker-compose.yml, .dockerignore
+- [x] Added CI/CD workflows: ci.yml (lint + typecheck + test), security.yml (npm audit), docker.yml (image build)
+- [x] Replaced old pr-tests.yml with comprehensive ci.yml
+- [x] Added .ai/standards/security.md (OWASP, input validation, secrets, dependencies)
+- [x] Added .ai/standards/performance.md (DB queries, API targets, caching, Core Web Vitals)
+- [x] Added .ai/patterns/deployment/ (Docker patterns, CI/CD pipeline docs)
+- [x] Created src/ directory scaffold with barrel exports (components, hooks, utils, lib, services, types, app)
+- [x] Added src/env.ts for runtime environment variable validation
+- [x] Added README.md, LICENSE (MIT), CONTRIBUTING.md, CHANGELOG.md
+- [x] Updated .gitignore for coverage, Docker, TypeScript build info
+- [x] Updated package.json with all dev dependencies, scripts, lint-staged config
+- [x] Updated .ai/ cross-references (index.md, standards/index.md, patterns/index.md, architecture.md)
+- [x] Added commitlint + @commitlint/config-conventional + .husky/commit-msg hook
+- [x] Created .github/ISSUE_TEMPLATE/ (bug_report.yml, feature_request.yml, config.yml)
+- [x] Created .github/PULL_REQUEST_TEMPLATE.md with summary, changes, test plan, checklist
+- [x] Created .github/CODEOWNERS with template owner patterns
+- [x] Created SECURITY.md with responsible disclosure policy
+- [x] Added package.json metadata: license, author, repository, keywords, main, types, exports, files
+- [x] Created tsconfig.test.json extending base config for test files
+- [x] Added Docker ecosystem to .github/dependabot.yml
+- [x] Updated architecture.md key files and configuration tables
 
 ### 2026-01-24
 
@@ -69,30 +115,41 @@
 Template/
 ├── .ai/                        # ⭐ SINGLE SOURCE OF TRUTH for all AI instructions
 │   ├── index.md                # Central navigation router
-│   ├── standards/              # Universal principles (code-quality, debugging, docs)
+│   ├── standards/              # Universal principles (code-quality, security, performance, debugging, docs, architecture)
 │   ├── workflows/              # Development processes (task-mgmt, dev-cycle, git)
-│   ├── patterns/               # Implementation guides (frontend/, backend/, testing/)
+│   ├── patterns/               # Implementation guides (frontend/, backend/, testing/, deployment/)
 │   ├── tools/                  # AI tool configurations (claude, cursor, cline, etc.)
 │   └── project/                # Project-specific (tech-stack, discovered-patterns)
-├── .clinerules/
-│   └── _loader.md              # Points to .ai/
-├── .cursor/
-│   ├── mcp.json
-│   └── rules/
-│       ├── _loader.mdc         # Points to .ai/
-│       └── progress_tracking.mdc
-├── .github/
-│   └── instructions/
-│       └── _loader.instructions.md  # Points to .ai/
-├── .taskmaster/
-│   └── CLAUDE.md
-├── docs/
-│   └── PROJECT_RULES.md        # Legacy - consider migrating to .ai/project/
-├── AGENTS.md                   # Entry point → routes to .ai/index.md
-├── CLAUDE.md                   # Entry point → routes to .ai/tools/claude-code.md
-├── GEMINI.md                   # Entry point → routes to .ai/tools/gemini-cli.md
+├── src/                        # Application source code
+│   ├── app/                    # Application routes/pages
+│   ├── components/             # Reusable UI components
+│   ├── hooks/                  # Custom hooks
+│   ├── lib/                    # Third-party integrations
+│   ├── services/               # Business logic & API calls
+│   ├── types/                  # TypeScript type definitions
+│   ├── utils/                  # Helper functions
+│   ├── env.ts                  # Environment variable validation
+│   └── index.ts                # Application entry point
+├── tests/                      # Test setup and global test utilities
+├── .github/workflows/          # CI/CD pipelines (ci, security, docker, release, dependabot)
+├── .github/ISSUE_TEMPLATE/     # Bug report + feature request form templates
+├── .github/PULL_REQUEST_TEMPLATE.md  # Standard PR template
+├── .github/CODEOWNERS          # Auto-assign PR reviewers
+├── .husky/                     # Git hooks (pre-commit: lint-staged, commit-msg: commitlint)
+├── biome.json                  # Linting + formatting configuration
+├── vitest.config.ts            # Test configuration
+├── tsconfig.json               # TypeScript configuration
+├── tsconfig.test.json          # TypeScript config for test files
+├── commitlint.config.js        # Conventional Commits enforcement
+├── Dockerfile                  # Multi-stage container build
+├── docker-compose.yml          # Local development services
+├── package.json                # Dependencies, scripts, lint-staged
 ├── progress-project.md         # THIS FILE - project state tracker
-└── package.json
+├── README.md                   # Project documentation
+├── CONTRIBUTING.md             # Contribution guidelines
+├── CHANGELOG.md                # Version history
+├── SECURITY.md                 # Vulnerability disclosure policy
+└── LICENSE                     # MIT license
 ```
 
 ---
@@ -101,6 +158,14 @@ Template/
 
 | Decision | Rationale | Date |
 |----------|-----------|------|
+| Biome over ESLint + Prettier | Single tool for lint + format + imports, 10-100x faster, zero config conflicts | 2026-02-28 |
+| Vitest over Jest | Native ESM, TypeScript, and Vite support; faster execution; built-in coverage | 2026-02-28 |
+| Tab indentation | Biome default, accessibility-friendly (users set visual width), saves bytes | 2026-02-28 |
+| Node 22 LTS | Current LTS with native fetch, test runner, and performance improvements | 2026-02-28 |
+| Multi-stage Docker builds | Smaller prod images, cached dependencies, non-root security | 2026-02-28 |
+| Exact npm versions | Prevents phantom dependency drift; reproducible installs | 2026-02-28 |
+| Commitlint over manual enforcement | Automatically rejects non-conventional commit messages at git hook level | 2026-02-28 |
+| YAML issue templates over Markdown | Form-based templates ensure required fields, better UX than freeform | 2026-02-28 |
 | Hierarchical Book Architecture in `.ai/` | Eliminates duplication, provides clear navigation, separates standards from patterns | 2026-01-24 |
 | Minimal loader files for each tool | Tool-specific dirs just point to .ai/, no duplicated content | 2026-01-24 |
 | Mandatory progress tracking | Ensures continuity across sessions, eliminates redundant work, provides instant context | 2026-01-15 |
@@ -127,9 +192,9 @@ Template/
 
 ## Session Notes
 
-_Last session ended with: Completed migration to Hierarchical Book Architecture. All AI instructions now centralized in `.ai/` directory with tool-specific loaders._
+_Last session ended with: Added GitHub collaboration features — commitlint, issue/PR templates, CODEOWNERS, SECURITY.md, package.json metadata, tsconfig.test.json, Docker dependabot._
 
-_Next session should start with: Consider migrating `docs/PROJECT_RULES.md` content to `.ai/project/` and deleting the legacy file. Also customize `.ai/project/tech-stack.md` placeholders for actual projects._
+_Next session should start with: Customize template placeholders ({{PROJECT_NAME}}, {{AUTHOR}}, {{OWNER}}, {{SECURITY_EMAIL}}) for actual projects. Consider migrating `docs/PROJECT_RULES.md` to `.ai/project/`. Fill in `.ai/project/tech-stack.md` with actual technology choices._
 
 ---
 

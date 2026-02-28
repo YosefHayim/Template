@@ -9,12 +9,21 @@ dev-debug.log
 # Dependency directories
 node_modules/
 
+# Build output
+dist/
+build/
+out/
+
 # Environment variables
 .env
+.env.local
+.env.*.local
 
 # Editor directories and files
 .idea
-.vscode
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 *.suo
 *.ntvs*
 *.njsproj
@@ -23,7 +32,17 @@ node_modules/
 
 # OS specific
 .DS_Store
+Thumbs.db
+
+# Testing
+coverage/
+
+# Docker
+.docker/
+
+# TypeScript
+*.tsbuildinfo
 
 # Task files
 # tasks.json
-# tasks/ 
+# tasks/
