@@ -22,8 +22,4 @@ Do not rename variables during destructuring unless there is a real naming colli
 
 Do not run or attempt to execute applications. Only produce code and indicate when it is ready to test.
 
-Apps must use `"*"` for all dependencies. Dependency versions are defined only in the root `package.json`.
-
-Load all required DB data in a single aggregation during initialization when applicable.
-
-Before creating a new component or utility, verify if an existing solution is available in @manyapp/ui.
+TypeScript: never use the 'as type/interface'.
