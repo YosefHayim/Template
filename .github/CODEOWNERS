@@ -1,0 +1,12 @@
+# Default owner for everything
+* @{{OWNER}}
+
+# AI instructions and standards
+.ai/ @{{OWNER}}
+
+# CI/CD and GitHub configuration
+.github/ @{{OWNER}}
+
+# Infrastructure
+Dockerfile @{{OWNER}}
+docker-compose.yml @{{OWNER}}

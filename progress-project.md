@@ -32,6 +32,14 @@
 | Deployment Patterns | Complete | Docker patterns, CI/CD pipeline documentation |
 | Project Scaffolding | Complete | src/ structure, README, LICENSE, CONTRIBUTING, CHANGELOG |
 | Environment Validation | Complete | src/env.ts for runtime env var validation |
+| Commitlint | Complete | Conventional Commits enforced via commit-msg hook |
+| GitHub Issue Templates | Complete | Form-based bug report + feature request templates |
+| PR Template | Complete | Standard PR template with checklist |
+| CODEOWNERS | Complete | Auto-assign PR reviewers by file path |
+| SECURITY.md | Complete | Responsible vulnerability disclosure policy |
+| Package.json Metadata | Complete | exports, types, repository, files fields |
+| TypeScript Test Config | Complete | tsconfig.test.json for test file IDE support |
+| Docker Dependabot | Complete | Dockerfile base image dependency tracking |
 
 ---
 
@@ -55,6 +63,15 @@
 - [x] Updated .gitignore for coverage, Docker, TypeScript build info
 - [x] Updated package.json with all dev dependencies, scripts, lint-staged config
 - [x] Updated .ai/ cross-references (index.md, standards/index.md, patterns/index.md, architecture.md)
+- [x] Added commitlint + @commitlint/config-conventional + .husky/commit-msg hook
+- [x] Created .github/ISSUE_TEMPLATE/ (bug_report.yml, feature_request.yml, config.yml)
+- [x] Created .github/PULL_REQUEST_TEMPLATE.md with summary, changes, test plan, checklist
+- [x] Created .github/CODEOWNERS with template owner patterns
+- [x] Created SECURITY.md with responsible disclosure policy
+- [x] Added package.json metadata: license, author, repository, keywords, main, types, exports, files
+- [x] Created tsconfig.test.json extending base config for test files
+- [x] Added Docker ecosystem to .github/dependabot.yml
+- [x] Updated architecture.md key files and configuration tables
 
 ### 2026-01-24
 
@@ -115,10 +132,15 @@ Template/
 │   └── index.ts                # Application entry point
 ├── tests/                      # Test setup and global test utilities
 ├── .github/workflows/          # CI/CD pipelines (ci, security, docker, release, dependabot)
-├── .husky/                     # Git hooks (pre-commit: lint-staged)
+├── .github/ISSUE_TEMPLATE/     # Bug report + feature request form templates
+├── .github/PULL_REQUEST_TEMPLATE.md  # Standard PR template
+├── .github/CODEOWNERS          # Auto-assign PR reviewers
+├── .husky/                     # Git hooks (pre-commit: lint-staged, commit-msg: commitlint)
 ├── biome.json                  # Linting + formatting configuration
 ├── vitest.config.ts            # Test configuration
 ├── tsconfig.json               # TypeScript configuration
+├── tsconfig.test.json          # TypeScript config for test files
+├── commitlint.config.js        # Conventional Commits enforcement
 ├── Dockerfile                  # Multi-stage container build
 ├── docker-compose.yml          # Local development services
 ├── package.json                # Dependencies, scripts, lint-staged
@@ -126,6 +148,7 @@ Template/
 ├── README.md                   # Project documentation
 ├── CONTRIBUTING.md             # Contribution guidelines
 ├── CHANGELOG.md                # Version history
+├── SECURITY.md                 # Vulnerability disclosure policy
 └── LICENSE                     # MIT license
 ```
 
@@ -141,6 +164,8 @@ Template/
 | Node 22 LTS | Current LTS with native fetch, test runner, and performance improvements | 2026-02-28 |
 | Multi-stage Docker builds | Smaller prod images, cached dependencies, non-root security | 2026-02-28 |
 | Exact npm versions | Prevents phantom dependency drift; reproducible installs | 2026-02-28 |
+| Commitlint over manual enforcement | Automatically rejects non-conventional commit messages at git hook level | 2026-02-28 |
+| YAML issue templates over Markdown | Form-based templates ensure required fields, better UX than freeform | 2026-02-28 |
 | Hierarchical Book Architecture in `.ai/` | Eliminates duplication, provides clear navigation, separates standards from patterns | 2026-01-24 |
 | Minimal loader files for each tool | Tool-specific dirs just point to .ai/, no duplicated content | 2026-01-24 |
 | Mandatory progress tracking | Ensures continuity across sessions, eliminates redundant work, provides instant context | 2026-01-15 |
@@ -167,9 +192,9 @@ Template/
 
 ## Session Notes
 
-_Last session ended with: Comprehensive template upgrade — added Biome, Vitest, Husky, Docker, CI/CD pipelines, security/performance standards, deployment patterns, and project scaffolding._
+_Last session ended with: Added GitHub collaboration features — commitlint, issue/PR templates, CODEOWNERS, SECURITY.md, package.json metadata, tsconfig.test.json, Docker dependabot._
 
-_Next session should start with: Customize template placeholders ({{PROJECT_NAME}}, {{AUTHOR}}, etc.) for actual projects. Consider migrating `docs/PROJECT_RULES.md` to `.ai/project/`. Fill in `.ai/project/tech-stack.md` with actual technology choices._
+_Next session should start with: Customize template placeholders ({{PROJECT_NAME}}, {{AUTHOR}}, {{OWNER}}, {{SECURITY_EMAIL}}) for actual projects. Consider migrating `docs/PROJECT_RULES.md` to `.ai/project/`. Fill in `.ai/project/tech-stack.md` with actual technology choices._
 
 ---
 

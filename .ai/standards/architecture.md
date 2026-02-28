@@ -44,7 +44,10 @@
 | `src/types/index.ts` | Shared TypeScript types | Before defining new types |
 | `src/lib/index.ts` | Third-party integrations | Before adding new integrations |
 | `CHANGELOG.md` | Version history | After completing features |
+| `SECURITY.md` | Vulnerability disclosure policy | Security-related changes |
 | `package.json` | Dependencies & scripts | Before adding packages |
+| `commitlint.config.js` | Commit message convention enforcement | Updating commit rules |
+| `tsconfig.test.json` | TypeScript config for tests | Adding test dependencies |
 
 ---
 
@@ -103,6 +106,9 @@ src/services/
 | `.env.example` | Environment variables template |
 | `.editorconfig` | Cross-editor consistency |
 | `.nvmrc` | Node.js version pinning |
+| `commitlint.config.js` | Conventional commit enforcement |
+| `tsconfig.test.json` | TypeScript config for test files |
+| `.github/CODEOWNERS` | Auto-assign PR reviewers |
 
 ---
 
