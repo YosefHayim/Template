@@ -1,0 +1,29 @@
+DRY. No repetition.
+
+Production-ready code only. No TODOs, placeholders, leftovers, or “later”.
+
+Extract shared utils, hooks, flows, and templates when there is clear reuse.
+
+Do not create README or documentation files unless explicitly requested.
+
+If changes to instructions or architecture are needed, propose them before writing code.
+
+Do not disable pylint. Fix all pylint issues.
+
+TypeScript: never use `any`. Always use the most specific correct type.
+
+Do not use `require`. Use static imports. Use `require` only to resolve unavoidable circular dependencies.
+
+Do not import solely to re-export. Avoid re-exports.
+
+Index files may only re-export modules. Never write logic in index files.
+
+Do not rename variables during destructuring unless there is a real naming collision in the same scope.
+
+Do not run or attempt to execute applications. Only produce code and indicate when it is ready to test.
+
+Apps must use `"*"` for all dependencies. Dependency versions are defined only in the root `package.json`.
+
+Load all required DB data in a single aggregation during initialization when applicable.
+
+Before creating a new component or utility, verify if an existing solution is available in @manyapp/ui.
