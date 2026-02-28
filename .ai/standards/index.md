@@ -14,6 +14,8 @@ Standards are non-negotiable principles. They represent the minimum bar for code
 | Document | Summary |
 |----------|---------|
 | [Code Quality](./code-quality.md) | Anti-duplication rules, DRY principle, reuse hierarchy |
+| [Security](./security.md) | Input validation, OWASP top 10, secrets management, dependency audit |
+| [Performance](./performance.md) | Database queries, API targets, frontend budgets, caching strategy |
 | [Debugging Protocol](./debugging-protocol.md) | Bug analysis, 5 Whys technique, fix quality categories |
 | [Documentation](./documentation.md) | Self-improvement protocol, when to update rules |
 | [Architecture](./architecture.md) | Project structure, key files reference |

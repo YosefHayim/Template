@@ -15,6 +15,7 @@ Patterns are concrete implementation guides. Unlike standards (which are univers
 | **Frontend** | Components, styling, data fetching | [frontend/](./frontend/index.md) |
 | **Backend** | Services, API routes, error handling | [backend/](./backend/index.md) |
 | **Testing** | Component tests, service tests | [testing/](./testing/index.md) |
+| **Deployment** | Docker, CI/CD, environment promotion | [deployment/](./deployment/index.md) |
 
 ---
 

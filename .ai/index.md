@@ -29,6 +29,8 @@ These apply to ALL work, regardless of task type. **Read before creating any new
 | Document | Purpose | When to Read |
 |----------|---------|--------------|
 | [Code Quality](./standards/code-quality.md) | Anti-duplication, DRY, reuse hierarchy | Before creating ANY new code |
+| [Security](./standards/security.md) | Input validation, OWASP, secrets | Handling user input or auth |
+| [Performance](./standards/performance.md) | DB queries, API targets, caching | Optimizing or building new features |
 | [Debugging Protocol](./standards/debugging-protocol.md) | Bug analysis, 5 Whys, fix quality | When fixing bugs |
 | [Documentation](./standards/documentation.md) | Self-improvement, rule updates | After discovering patterns |
 | [Architecture](./standards/architecture.md) | Project structure, key files | Understanding codebase layout |
@@ -52,6 +54,7 @@ Specific code patterns for this project. Organized by domain.
 | **Frontend** | [patterns/frontend/](./patterns/frontend/index.md) | Components, styling, data fetching |
 | **Backend** | [patterns/backend/](./patterns/backend/index.md) | Services, API routes, error handling |
 | **Testing** | [patterns/testing/](./patterns/testing/index.md) | Component tests, service tests |
+| **Deployment** | [patterns/deployment/](./patterns/deployment/index.md) | Docker, CI/CD, environments |
 
 ### Tools (Integration & Setup)
 

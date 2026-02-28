@@ -96,11 +96,13 @@ src/services/
 | File | Purpose |
 |------|---------|
 | `tsconfig.json` | TypeScript configuration |
-| `tailwind.config.js` | Tailwind CSS configuration |
-| `eslint.config.js` | ESLint rules |
-| `prettier.config.js` | Code formatting |
+| `biome.json` | Linting and formatting (Biome) |
 | `vitest.config.ts` | Test configuration |
+| `Dockerfile` | Container build (multi-stage) |
+| `docker-compose.yml` | Local development services |
 | `.env.example` | Environment variables template |
+| `.editorconfig` | Cross-editor consistency |
+| `.nvmrc` | Node.js version pinning |
 
 ---
 
