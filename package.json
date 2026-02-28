@@ -43,7 +43,7 @@
 		"init": "bash scripts/init.sh"
 	},
 	"dependencies": {
-		"glob": "^13.0.2"
+		"glob": "^13.0.6"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.0.0",
