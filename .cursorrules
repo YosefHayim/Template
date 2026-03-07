@@ -25,3 +25,5 @@ Do not run or attempt to execute applications. Only produce code and indicate wh
 TypeScript: never use the 'as type/interface'.
 
 Do not declare variables or files with underscore examples: const _DEV_ or _tests_
+
+Do not ignore LSP errors, even if they are pre-existing or unrelated to your implementation. Fix every LSP error you encounter. The fix must be proper — never suppress errors with `any`, `as unknown`, `@ts-ignore`, `@ts-expect-error`, or any other type-silencing workaround.
