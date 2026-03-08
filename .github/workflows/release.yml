@@ -90,8 +90,4 @@ jobs:
             --generate-notes \
             --latest
 
-      # ── Uncomment to enable npm publish on release ──
-      # - name: Publish to npm
-      #   run: npm publish --access public
-      #   env:
-      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # npm publish is handled by publish.yml (triggered by the tag created above)
