@@ -1,5 +1,5 @@
-const fs = require("fs");
-const path = require("path");
+const fs = require('node:fs');
+const path = require('node:path');
 
 const pkgPath = path.join(process.cwd(), 'package.json');
 const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
