@@ -1,28 +1,47 @@
 # {{PROJECT_NAME}}
 
-[![CI](https://github.com/{{OWNER}}/{{PROJECT_NAME}}/actions/workflows/ci.yml/badge.svg)](https://github.com/{{OWNER}}/{{PROJECT_NAME}}/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Node.js](https://img.shields.io/badge/Node.js-22+-green.svg)](https://nodejs.org/)
+<div align="center">
 
-> {{PROJECT_DESCRIPTION}}
+<!-- npm package badges (remove if not an npm package) -->
+[![npm version](https://img.shields.io/npm/v/{{NPM_PACKAGE_NAME}})](https://www.npmjs.com/package/{{NPM_PACKAGE_NAME}})
+[![npm downloads](https://img.shields.io/npm/dm/{{NPM_PACKAGE_NAME}})](https://www.npmjs.com/package/{{NPM_PACKAGE_NAME}})
+
+<!-- always include these -->
+[![CI](https://github.com/YosefHayim/{{PROJECT_NAME}}/actions/workflows/ci.yml/badge.svg)](https://github.com/YosefHayim/{{PROJECT_NAME}}/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Contributors Welcome](https://img.shields.io/badge/contributors-welcome-brightgreen.svg)](https://github.com/YosefHayim/{{PROJECT_NAME}}/issues)
+
+> {{ONE_LINE_DESCRIPTION}}
+
+</div>
+
+---
+
+## What is it
+
+{{WHAT_IS_IT — 2-3 sentences. What does this project do? Who is it for?}}
+
+---
+
+## Why
+
+{{WHY_IT_EXISTS — 2-3 sentences. What problem does it solve? Why was it built?}}
+
+---
+
+## Install
+
+```bash
+{{INSTALL_COMMAND}}
+```
 
 ---
 
 ## Quick Start
 
-```bash
-# Clone the repository
-git clone {{REPO_URL}}
-cd {{PROJECT_NAME}}
+{{QUICK_START_EXAMPLE}}
 
-# Bootstrap project (replaces placeholders, installs deps, creates .env)
-bash scripts/init.sh
-
-# Start development
-npm run dev
-```
-
-> **Already initialized?** Skip `init.sh` and just run `npm install`.
+---
 
 ## Scripts
 
@@ -30,32 +49,22 @@ npm run dev
 |---------|-------------|
 | `npm run dev` | Start development server |
 | `npm run build` | Build for production |
-| `npm run start` | Run production build |
-| `npm run check` | Run Biome linter + formatter check |
-| `npm run check:fix` | Auto-fix lint + format issues |
-| `npm run test` | Run tests once |
-| `npm run test:watch` | Run tests in watch mode |
-| `npm run test:coverage` | Run tests with coverage report |
+| `npm run test` | Run tests |
 | `npm run typecheck` | TypeScript type checking |
-| `npm run validate` | Run all checks (types + lint + tests) |
+| `npm run check` | Run all checks (types + lint + tests) |
+
+---
 
 ## Project Structure
 
-```text
+```
 src/
-  app/          # Application routes/pages
-  components/   # Reusable UI components
-  hooks/        # Custom hooks
-  lib/          # Third-party integrations
-  services/     # Business logic & API calls
-  types/        # TypeScript type definitions
-  utils/        # Helper functions
-tests/          # Test setup and global test utilities
+  {{STRUCTURE}}
 ```
 
-## Tech Stack
+---
 
-<!-- Replace with your actual tech stack -->
+## Tech Stack
 
 | Category | Technology |
 |----------|-----------|
@@ -65,30 +74,32 @@ tests/          # Test setup and global test utilities
 | Testing | Vitest |
 | CI/CD | GitHub Actions |
 
-## Development
-
-### Code Quality
-
-This project uses [Biome](https://biomejs.dev/) for linting and formatting. Pre-commit hooks via Husky + lint-staged ensure code quality before every commit.
-
-### Testing
-
-Tests are written with [Vitest](https://vitest.dev/). Place test files next to the code they test using `.test.ts` or `.spec.ts` extensions.
-
-### Docker
-
-```bash
-# Build and run with Docker Compose
-docker compose up --build
-
-# Production build only
-docker build -t {{PROJECT_NAME}} .
-```
+---
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+PRs and issues welcome. Fork the repo, create a feature branch, and open a pull request.
+
+Steps:
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feat/my-feature`
+3. Commit using [Conventional Commits](https://www.conventionalcommits.org/)
+4. Push and open a Pull Request
+
+---
 
 ## License
 
-[MIT](LICENSE)
+MIT
+
+---
+
+<!-- 
+  SETUP CHECKLIST (delete this section when done):
+  [ ] Replace all {{PLACEHOLDERS}} above
+  [ ] Remove npm badges if not an npm package
+  [ ] Update Scripts table to match actual package.json scripts
+  [ ] Update Tech Stack table
+  [ ] Add llms.txt file (see docs/GRIMOIRE_REFERENCE.md for example format)
+  [ ] Run: bash scripts/init.sh to bootstrap the project
+-->
