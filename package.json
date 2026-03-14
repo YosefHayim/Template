@@ -1,6 +1,6 @@
 {
 	"name": "{{PROJECT_NAME}}",
-	"version": "0.29.3",
+	"version": "0.30.3",
 	"description": "{{PROJECT_DESCRIPTION}}",
 	"type": "module",
 	"license": "MIT",
@@ -52,6 +52,7 @@
 		"@vitest/ui": "^3.0.0",
 		"husky": "^9.0.0",
 		"lint-staged": "^15.0.0",
+		"pr-prism": "^1.0.5",
 		"typescript": "^5.7.0",
 		"vitest": "^3.0.0"
 	},
