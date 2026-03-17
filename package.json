@@ -59,7 +59,7 @@
 		"eslint-plugin-unused-imports": "4.4.1",
 		"husky": "^9.0.0",
 		"knip": "5.86.0",
-		"lint-staged": "^15.0.0",
+		"lint-staged": "^16.4.0",
 		"pr-prism": "^1.0.5",
 		"typescript": "^5.7.0",
 		"vitest": "^3.0.0"
