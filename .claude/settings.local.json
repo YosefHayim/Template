@@ -1,4 +1,15 @@
 {
-	"enabledMcpjsonServers": ["task-master-ai"],
-	"enableAllProjectMcpServers": true
+  "permissions": {
+    "allow": [
+      "Bash(git submodule *)",
+      "Bash(git rm *)",
+      "Bash(npx skills@latest *)",
+      "Bash(git add *)",
+      "Bash(git pull *)",
+      "Bash(git commit *)",
+      "Bash(git push *)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": []
 }
