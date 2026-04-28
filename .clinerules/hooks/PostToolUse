@@ -1,11 +1,73 @@
 #!/bin/bash
+# =============================================================================
+# AI Guard Plugin: PostToolUse Hook for Cline
+# Combines: billing-guard (after), auto-lint-fix
+#
+# Requires: jq (https://jqlang.github.io/jq/)
+# Optional: biome (https://biomejs.dev/) for auto-formatting
+# Contract: reads JSON from stdin, outputs JSON to stdout
+# =============================================================================
 
-input=$(cat)
-tool=$(echo "$input" | jq -r '.postToolUse.tool // empty')
-success=$(echo "$input" | jq -r '.postToolUse.success // empty')
-duration=$(echo "$input" | jq -r '.postToolUse.durationMs // empty')
+set -euo pipefail
 
-log_file="${HOME}/.cline-tool-log.txt"
-echo "$(date -Iseconds) | $tool | success=$success | ${duration}ms" >> "$log_file"
+INPUT=$(cat)
 
-echo '{"cancel":false,"contextModification":"","errorMessage":""}'
+TOOL=$(echo "$INPUT" | jq -r '.postToolUse.tool // empty' 2>/dev/null || true)
+PARAMS=$(echo "$INPUT" | jq -c '.postToolUse.parameters // {}' 2>/dev/null || echo '{}')
+RESULT=$(echo "$INPUT" | jq -r '.postToolUse.result // empty' 2>/dev/null || true)
+
+# Default: allow
+allow() { echo '{"cancel":false,"contextModification":"","errorMessage":""}'; exit 0; }
+cancel() { echo "{\"cancel\":true,\"contextModification\":\"\",\"errorMessage\":$(echo "$1" | jq -Rs .)}"; exit 0; }
+inform() { echo "{\"cancel\":false,\"contextModification\":$(echo "$1" | jq -Rs .),\"errorMessage\":\"\"}"; exit 0; }
+
+[ -z "$TOOL" ] && allow
+
+# =============================================================================
+# 1. BILLING GUARD (after) — detect billing errors in tool results
+# =============================================================================
+if [ -n "$RESULT" ]; then
+  if echo "$RESULT" | grep -qiE \
+    'payment.method|payment.required|account.is.not.active.*billing|billing.details|quota.exceeded|insufficient.funds|rate.limit.*billing|plan.expired|subscription.inactive'; then
+    cancel "BILLING ERROR detected in tool result. The API provider requires payment. Fix billing before retrying. Do NOT retry this operation."
+  fi
+fi
+
+# =============================================================================
+# 2. AUTO LINT FIX — run biome after file writes
+# =============================================================================
+if [ "$TOOL" = "write_to_file" ] || [ "$TOOL" = "insert_code_block" ] || [ "$TOOL" = "search_and_replace" ]; then
+  FILE_PATH=$(echo "$PARAMS" | jq -r '.path // empty' 2>/dev/null || true)
+  [ -z "$FILE_PATH" ] && allow
+
+  # Only lint code files
+  EXT="${FILE_PATH##*.}"
+  case "$EXT" in
+    ts|tsx|js|jsx|mts|mjs|cts|cjs) ;;
+    *) allow ;;
+  esac
+
+  # Skip excluded paths (handle both root-level and nested)
+  for skip in node_modules dist .next build .turbo; do
+    [[ "$FILE_PATH" == "$skip/"* || "$FILE_PATH" == *"/$skip/"* ]] && allow
+  done
+
+  # Find biome binary
+  BIOME="${BIOME_PATH:-biome}"
+  if ! command -v "$BIOME" &>/dev/null; then
+    if [ -f "./node_modules/.bin/biome" ]; then
+      BIOME="./node_modules/.bin/biome"
+    else
+      allow
+    fi
+  fi
+
+  # Run biome fix
+  if "$BIOME" check --fix --unsafe "$FILE_PATH" &>/dev/null; then
+    inform "[auto-lint-fix] Auto-formatted ${FILE_PATH##*/} with Biome."
+  else
+    allow
+  fi
+fi
+
+allow

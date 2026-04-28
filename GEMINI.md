@@ -72,3 +72,9 @@ add_task           // Create task
 
 *Full documentation: [.ai/index.md](.ai/index.md)*
 *Gemini CLI specifics: [.ai/tools/gemini-cli.md](.ai/tools/gemini-cli.md)*
+
+<!-- ai-guard-plugins:unified-core -->
+## Core engineering standards (ai-guard-plugins)
+@.ai-guard/rules/coding-standards.md
+@.ai-guard/rules/engineering-principles.md
+@.ai-guard/rules/deslop.md

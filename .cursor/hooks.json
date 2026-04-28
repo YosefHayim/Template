@@ -1,13 +1,33 @@
 {
-	"version": 1,
-	"hooks": {
-		"sessionStart": [{ "command": ".cursor/hooks/session-init.sh" }],
-		"beforeShellExecution": [
-			{
-				"command": ".cursor/hooks/block-dangerous.sh",
-				"matcher": "rm -rf|rm -r |curl |wget |nc "
-			}
-		],
-		"afterFileEdit": [{ "command": ".cursor/hooks/format.sh" }]
-	}
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": ".cursor/hooks/session-init.sh"
+      },
+      {
+        "command": ".cursor/hooks/dedup-index-build.sh",
+        "timeout": 60
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": ".cursor/hooks/block-dangerous.sh",
+        "matcher": "rm -rf|rm -r |curl |wget |nc "
+      }
+    ],
+    "afterFileEdit": [
+      {
+        "command": ".cursor/hooks/format.sh"
+      },
+      {
+        "command": ".cursor/hooks/dedup-after-edit.sh",
+        "timeout": 120
+      },
+      {
+        "command": ".cursor/hooks/typecheck-after-edit.sh",
+        "timeout": 180
+      }
+    ]
+  }
 }

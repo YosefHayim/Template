@@ -1,44 +1,29 @@
 #!/bin/bash
+# =============================================================================
+# AI Guard Plugin: UserPromptSubmit Hook for Cline
+# Simplified: auto-summarize-input (warns about large inputs)
+#
+# Requires: jq (https://jqlang.github.io/jq/)
+# Contract: reads JSON from stdin, outputs JSON to stdout
+# =============================================================================
 
-input=$(cat)
-workspace_root=$(echo "$input" | jq -r '.workspaceRoots[0] // empty')
-[ -z "$workspace_root" ] && workspace_root="$PWD"
+set -euo pipefail
 
-today=$(date '+%Y-%m-%d')
-branch=""
-if [[ -d "$workspace_root/.git" ]]; then
-  branch=$(git -C "$workspace_root" branch --show-current 2>/dev/null || echo "")
+INPUT=$(cat)
+
+PROMPT=$(echo "$INPUT" | jq -er '.userPromptSubmit.userPrompt // empty' 2>/dev/null || true)
+
+# Default: allow
+allow() { echo '{"cancel":false,"contextModification":"","errorMessage":""}'; exit 0; }
+warn() { echo "{\"cancel\":false,\"contextModification\":$(echo "$1" | jq -Rs .),\"errorMessage\":\"\"}"; exit 0; }
+
+[ -z "$PROMPT" ] && allow
+
+THRESHOLD=10000
+CHAR_COUNT=${#PROMPT}
+
+if [ "$CHAR_COUNT" -gt "$THRESHOLD" ]; then
+  warn "[auto-summarize] Input is very large (${CHAR_COUNT} chars). Before processing, summarize this input while preserving ALL code snippets, file paths, error messages, and requirements verbatim. Remove ONLY redundancy, repetition, and filler text."
 fi
-model_provider=$(echo "$input" | jq -r '.model.provider // "unknown"')
-model_slug=$(echo "$input" | jq -r '.model.slug // "unknown"')
 
-context="Today: $today."
-[[ -n "$branch" ]] && context="$context Branch: $branch."
-context="$context Model: $model_provider/$model_slug"
-
-context_modification=$(echo "$context" | jq -Rs '.')
-
-# Secret detection patterns (ECC-style)
-prompt=$(echo "$input" | jq -r '.message // empty')
-secret_patterns=(
-  "sk-[A-Za-z0-9]{20,}"           # OpenAI/Anthropic API keys
-  "ghp_[A-Za-z0-9]{36}"            # GitHub Personal Access Token
-  "AKIA[0-9A-Z]{16}"               # AWS Access Key ID
-  "xox[bapsa]-[0-9a-zA-Z]{10,133}" # Slack tokens
-  "-----BEGIN.*PRIVATE KEY-----"    # PEM private keys
-)
-
-detected_secret=""
-for pattern in "${secret_patterns[@]}"; do
-  if echo "$prompt" | grep -qE "$pattern"; then
-    detected_secret="$pattern"
-    break
-  fi
-done
-
-if [[ -n "$detected_secret" ]]; then
-  error_msg="⚠️  Secret detected in prompt (pattern: $detected_secret). Secrets should NEVER be pasted in prompts. Use environment variables or a secret manager instead."
-  echo "{\"cancel\":true,\"contextModification\":\"\",\"errorMessage\":\"$error_msg\"}"
-else
-  echo "{\"cancel\":false,\"contextModification\":$context_modification,\"errorMessage\":\"\"}"
-fi
+allow

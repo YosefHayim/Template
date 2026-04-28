@@ -1,66 +1,200 @@
 #!/bin/bash
+# =============================================================================
+# AI Guard Plugin: PreToolUse Hook for Cline
+# Combines: billing-guard (before), dry-guard, cursorrules-enforcer
+#
+# Requires: jq (https://jqlang.github.io/jq/)
+# Contract: reads JSON from stdin, outputs JSON to stdout
+# =============================================================================
 
-input=$(cat)
-tool=$(echo "$input" | jq -r '.preToolUse.tool // empty')
-params=$(echo "$input" | jq -c '.preToolUse.parameters // {}')
-command=$(echo "$params" | jq -r '.command // .commandLine // empty')
-path=$(echo "$params" | jq -r '.path // empty')
+set -euo pipefail
 
-context_parts=()
+INPUT=$(cat)
 
-if [[ "$tool" == "execute_command" && -n "$command" ]]; then
-  if echo "$command" | grep -qE '\bgit\b'; then
-    if echo "$command" | grep -qiE 'git\s+push\s+.*--force.*\b(main|master)\b'; then
-      echo '{"cancel":true,"contextModification":"","errorMessage":"Force push to main/master blocked by safety hook"}'
-      exit 0
+TOOL=$(echo "$INPUT" | jq -r '.preToolUse.tool // empty' 2>/dev/null || true)
+PARAMS=$(echo "$INPUT" | jq -c '.preToolUse.parameters // {}' 2>/dev/null || echo '{}')
+
+# Default: allow
+allow() { echo '{"cancel":false,"contextModification":"","errorMessage":""}'; exit 0; }
+cancel() { echo "{\"cancel\":true,\"contextModification\":\"\",\"errorMessage\":$(echo "$1" | jq -Rs .)}"; exit 0; }
+warn() { echo "{\"cancel\":false,\"contextModification\":$(echo "$1" | jq -Rs .),\"errorMessage\":\"\"}"; exit 0; }
+
+[ -z "$TOOL" ] && allow
+
+# =============================================================================
+# 1. BILLING GUARD (before) — block commands with billing errors
+# =============================================================================
+if [ "$TOOL" = "execute_command" ]; then
+  COMMAND=$(echo "$PARAMS" | jq -r '.command // empty' 2>/dev/null || true)
+  if [ -n "$COMMAND" ]; then
+    if echo "$COMMAND" | grep -qiE \
+      'payment.method|payment.required|account.is.not.active.*billing|billing.details|quota.exceeded|insufficient.funds|rate.limit.*billing|plan.expired|subscription.inactive'; then
+      cancel "BILLING ERROR detected in command. The API provider requires payment. Fix billing before retrying. Do NOT retry this operation."
+    fi
+  fi
+fi
+
+# =============================================================================
+# 2. CURSORRULES ENFORCER — block code violations
+# =============================================================================
+if [ "$TOOL" = "write_to_file" ] || [ "$TOOL" = "insert_code_block" ] || [ "$TOOL" = "search_and_replace" ]; then
+  FILE_PATH=$(echo "$PARAMS" | jq -r '.path // empty' 2>/dev/null || true)
+  [ -z "$FILE_PATH" ] && allow
+
+  BASENAME=$(basename "$FILE_PATH")
+  LOWER_BASENAME=$(echo "$BASENAME" | tr '[:upper:]' '[:lower:]')
+
+  # Check: documentation files (before extension filter)
+  case "$LOWER_BASENAME" in
+    readme|readme.md|changelog.md|contributing.md)
+      cancel "CURSORRULES VIOLATIONS in ${BASENAME}:\n- DOCUMENTATION: Creating ${BASENAME}. Do not create documentation files unless explicitly requested.\n\nFix these before proceeding."
+      ;;
+  esac
+
+  # Skip non-code extensions
+  EXT="${FILE_PATH##*.}"
+  case "$EXT" in
+    ts|tsx|js|jsx|mts|mjs|cts|cjs) ;;
+    *) ;; # Don't exit — DRY guard may still apply for write_to_file
+  esac
+
+  # Skip excluded paths
+  for skip in node_modules dist .next build .turbo migrations; do
+    [[ "$FILE_PATH" == "$skip/"* || "$FILE_PATH" == *"/$skip/"* ]] && allow
+  done
+
+  # Only run content checks on code files
+  IS_CODE=false
+  case "$EXT" in
+    ts|tsx|js|jsx|mts|mjs|cts|cjs) IS_CODE=true ;;
+  esac
+
+  if [ "$IS_CODE" = true ]; then
+    # Extract content
+    CONTENT=$(echo "$PARAMS" | jq -r '.content // .new_string // empty' 2>/dev/null || true)
+
+    if [ -n "$CONTENT" ]; then
+      VIOLATIONS=""
+
+      # Check: as any / as unknown
+      if echo "$CONTENT" | grep -qE '\bas\s+(any|unknown)\b'; then
+        VIOLATIONS="${VIOLATIONS}\n- TYPE CAST: 'as any' or 'as unknown' found. Use the most specific correct type."
+      fi
+
+      # Check: as Type assertions (exclude import/export aliases like "import { x as Foo }")
+      if echo "$CONTENT" | grep -qE '[^{,]\s+as\s+[A-Z][A-Za-z]+' | grep -vqE '(import|export)\s.*\bas\s'; then
+        VIOLATIONS="${VIOLATIONS}\n- TYPE ASSERTION: 'as Type' found. Avoid type assertions — use type narrowing or generics."
+      fi
+
+      # Check: require()
+      if echo "$CONTENT" | grep -qE '\brequire\s*\('; then
+        VIOLATIONS="${VIOLATIONS}\n- REQUIRE: require() found. Use static imports."
+      fi
+
+      # Check: @ts-ignore / @ts-expect-error
+      if echo "$CONTENT" | grep -qE '@ts-ignore|@ts-expect-error'; then
+        VIOLATIONS="${VIOLATIONS}\n- TS SUPPRESSION: @ts-ignore or @ts-expect-error found. Fix the type error properly."
+      fi
+
+      # Check: TODO / FIXME / HACK / placeholder / later
+      if echo "$CONTENT" | grep -qiE '\bTODO\b|\bFIXME\b|\bHACK\b|\bplaceholder\b|//\s*later\b'; then
+        VIOLATIONS="${VIOLATIONS}\n- PLACEHOLDER: TODO/FIXME/placeholder found. Production-ready code only."
+      fi
+
+      # Check: underscore-prefixed variables/functions
+      if echo "$CONTENT" | grep -qE '(const|let|var|function)\s+_[a-zA-Z]'; then
+        VIOLATIONS="${VIOLATIONS}\n- UNDERSCORE NAMING: Variable/function starting with underscore. Do not use underscore prefixes."
+      fi
+
+      # Check: underscore-prefixed filename
+      if [ "${BASENAME:0:1}" = "_" ]; then
+        VIOLATIONS="${VIOLATIONS}\n- UNDERSCORE FILE: Filename starts with underscore (${BASENAME}). Do not use underscore prefixes."
+      fi
+
+      # Check: index files should only re-export
+      if echo "$BASENAME" | grep -qiE '^index\.(ts|tsx|js|jsx|mts|mjs|cts|cjs)$'; then
+        NON_EXPORT_LINES=$(echo "$CONTENT" | awk '!/^[[:space:]]*(export[[:space:]]+[{*]|export[[:space:]]+type|export[[:space:]]+default|import[[:space:]]|\/\/|\/\*)/ && $0 !~ /^[[:space:]]*$/ {c++} END {print c+0}')
+        if [ "$NON_EXPORT_LINES" -gt 2 ]; then
+          VIOLATIONS="${VIOLATIONS}\n- INDEX LOGIC: Logic found in index file. Index files may only re-export modules."
+        fi
+      else
+        # Check: excessive re-exports in non-index files
+        REEXPORT_COUNT=$(echo "$CONTENT" | grep -cE 'export\s+\{[^}]*\}\s+from\s+' || echo "0")
+        if [ "$REEXPORT_COUNT" -gt 2 ]; then
+          VIOLATIONS="${VIOLATIONS}\n- RE-EXPORTS: Multiple re-exports in non-index file."
+        fi
+      fi
+
+      if [ -n "$VIOLATIONS" ]; then
+        cancel "CURSORRULES VIOLATIONS in ${BASENAME}:$(echo -e "$VIOLATIONS")\n\nFix these before proceeding."
+      fi
+    fi
+  fi
+fi
+
+# =============================================================================
+# 3. DRY GUARD — warn before creating duplicate files
+# =============================================================================
+if [ "$TOOL" = "write_to_file" ]; then
+  FILE_PATH=$(echo "$PARAMS" | jq -r '.path // empty' 2>/dev/null || true)
+  [ -z "$FILE_PATH" ] && allow
+
+  # Only check code files
+  EXT="${FILE_PATH##*.}"
+  case "$EXT" in
+    ts|tsx|js|jsx) ;;
+    *) allow ;;
+  esac
+
+  for skip in node_modules dist .next build .turbo migrations; do
+    [[ "$FILE_PATH" == "$skip/"* || "$FILE_PATH" == *"/$skip/"* ]] && allow
+  done
+
+  # Skip if file already exists (editing, not creating)
+  [ -f "$FILE_PATH" ] && allow
+
+  BASENAME=$(basename "$FILE_PATH")
+  DIRNAME=$(dirname "$FILE_PATH")
+  WARNINGS=""
+
+  # Tokenize filename and search for similar files
+  TOKENS=$(echo "$BASENAME" | sed 's/\.[^.]*$//' | tr '-_.' '\n' | tr '[:upper:]' '[:lower:]' | awk 'length >= 3')
+
+  for token in $TOKENS; do
+    SIMILAR=$(find . -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \) \
+      ! -path "*/node_modules/*" ! -path "*/dist/*" ! -path "*/.next/*" ! -path "*/.turbo/*" \
+      2>/dev/null | grep -Fi -- "$token" | grep -Fv -- "$FILE_PATH" | head -8 || true)
+    if [ -n "$SIMILAR" ]; then
+      COUNT=$(echo "$SIMILAR" | wc -l | tr -d ' ')
+      WARNINGS="${WARNINGS}\nSIMILAR FILES (${COUNT} matching '${token}'):\n${SIMILAR}"
+    fi
+  done
+
+  # Check target directory for existing files
+  if [ -d "$DIRNAME" ]; then
+    EXISTING=$(find "$DIRNAME" -maxdepth 1 -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \) 2>/dev/null || true)
+    if [ -n "$EXISTING" ]; then
+      ECOUNT=$(echo "$EXISTING" | wc -l | tr -d ' ')
+      WARNINGS="${WARNINGS}\nTARGET DIR already has ${ECOUNT} file(s):\n$(echo "$EXISTING" | head -15)"
     fi
   fi
 
-  if echo "$command" | grep -qE 'rm\s+-rf\s+/'; then
-    echo '{"cancel":true,"contextModification":"","errorMessage":"Recursive delete from root blocked by safety hook"}'
-    exit 0
+  # Check for PascalCase symbol collision
+  PASCAL=$(echo "$BASENAME" | sed 's/\.[^.]*$//' | sed -E 's/(^|[-_.])([a-z])/\U\2/g')
+  if [ ${#PASCAL} -ge 3 ]; then
+    for search_dir in src packages lib app; do
+      if [ -d "$search_dir" ]; then
+        COLLISIONS=$(grep -rEl -- "export.*${PASCAL}" "$search_dir" 2>/dev/null | grep -Fv -- "$FILE_PATH" | grep -v node_modules | head -5 || true)
+        if [ -n "$COLLISIONS" ]; then
+          WARNINGS="${WARNINGS}\nSYMBOL COLLISION — '${PASCAL}' already exported from:\n${COLLISIONS}"
+        fi
+      fi
+    done
   fi
 
-  if echo "$command" | grep -qE 'sudo\s+'; then
-    echo '{"cancel":true,"contextModification":"","errorMessage":"sudo commands blocked by safety hook"}'
-    exit 0
-  fi
-
-  if echo "$command" | grep -qE 'curl\s+.*\|\s*(bash|sh)\s*'; then
-    echo '{"cancel":true,"contextModification":"","errorMessage":"curl | bash patterns blocked by safety hook"}'
-    exit 0
-  fi
-
-  if echo "$command" | grep -qE '(npm|pnpm|yarn)\s+(install|add|i)\s+.*(https?://|git\+|github:)'; then
-    echo '{"cancel":true,"contextModification":"","errorMessage":"Package install from URL/git blocked by safety hook"}'
-    exit 0
+  if [ -n "$WARNINGS" ]; then
+    warn "[DRY-GUARD] Before creating ${BASENAME}:$(echo -e "$WARNINGS")\n\nConsider extending an existing file instead of creating a new one."
   fi
 fi
 
-if [[ "$tool" == "write_to_file" && -n "$path" ]]; then
-  if [[ "$path" == *.js ]]; then
-    echo '{"cancel":true,"contextModification":"","errorMessage":"Use .ts files instead of .js in this TypeScript project"}'
-    exit 0
-  fi
-
-  if [[ "$path" == *"/dist/"* || "$path" == *".generated."* || "$path" == *".generated"* ]]; then
-    context_parts+=("Note: This file is auto-generated. Edits may be overwritten.")
-  fi
-fi
-
-if [[ "$tool" == "read_file" && -n "$path" ]]; then
-  if [[ "$path" == *"/dist/"* || "$path" == *".generated."* || "$path" == *".generated"* ]]; then
-    context_parts+=("Note: This file is auto-generated. Edits may be overwritten.")
-  fi
-fi
-
-context_mod=""
-if [[ ${#context_parts[@]} -gt 0 ]]; then
-  context_mod=$(printf '%s\n' "${context_parts[@]}" | jq -Rs '.')
-fi
-
-if [[ -n "$context_mod" ]]; then
-  echo "{\"cancel\":false,\"contextModification\":$context_mod,\"errorMessage\":\"\"}"
-else
-  echo '{"cancel":false,"contextModification":"","errorMessage":""}'
-fi
+allow

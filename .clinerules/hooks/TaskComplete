@@ -1,33 +1,134 @@
 #!/bin/bash
+# =============================================================================
+# AI Guard Plugin: TaskComplete Hook for Cline
+# Simplified: capture-insights (pattern matching + JSONL logging)
+#
+# Requires: jq (https://jqlang.github.io/jq/)
+# Contract: reads JSON from stdin, outputs JSON to stdout
+# =============================================================================
 
-input=$(cat)
-workspace_root=$(echo "$input" | jq -r '.workspaceRoots[0] // empty')
-[ -z "$workspace_root" ] && workspace_root=$(cd "$(dirname "$0")/../.." && pwd)
-[ -z "$workspace_root" ] && workspace_root="$PWD"
+set -euo pipefail
 
-if [[ ! -f "$workspace_root/package.json" ]]; then
-  echo '{"cancel":false,"contextModification":"","errorMessage":""}'
-  exit 0
-fi
+INPUT=$(cat)
 
-cd "$workspace_root" || exit 0
+TASK_SUMMARY=$(echo "$INPUT" | jq -r '.taskComplete.summary // empty' 2>/dev/null || true)
 
-if grep -q '"typecheck"' "$workspace_root/package.json" 2>/dev/null; then
-  if pnpm typecheck 2>/dev/null; then
-    :
-  else
-    echo '{"cancel":true,"contextModification":"","errorMessage":"pnpm typecheck failed. Fix type errors before considering the task complete."}'
-    exit 0
+# Default: allow (never cancel on TaskComplete)
+allow() { echo '{"cancel":false,"contextModification":"","errorMessage":""}'; exit 0; }
+inform() { echo "{\"cancel\":false,\"contextModification\":$(echo "$1" | jq -Rs .),\"errorMessage\":\"\"}"; exit 0; }
+
+[ -z "$TASK_SUMMARY" ] && allow
+
+# =============================================================================
+# Memory file location
+# =============================================================================
+MEMORY_DIR="${HOME}/.cline/memory"
+MEMORY_FILE="${MEMORY_DIR}/insights.jsonl"
+
+mkdir -p "$MEMORY_DIR"
+
+# =============================================================================
+# Pattern checks (from capture-insights.ts)
+# =============================================================================
+MATCHED_IDS=""
+NOW=$(date -u +"%Y-%m-%dT%H:%M")
+PROJECT_NAME=$(basename "${PWD}")
+
+check_pattern() {
+  local id="$1"
+  local pattern="$2"
+  local insight="$3"
+
+  if echo "$TASK_SUMMARY" | grep -qiE "$pattern"; then
+    MATCHED_IDS="${MATCHED_IDS} ${id}"
+
+    if [ -f "$MEMORY_FILE" ] && grep -q "\"id\":\"${id}\"" "$MEMORY_FILE" 2>/dev/null; then
+      # Increment count for existing entry (using jq --arg for safe interpolation)
+      TMPFILE=$(mktemp)
+      while IFS= read -r line; do
+        if echo "$line" | grep -q "\"id\":\"${id}\""; then
+          OLD_COUNT=$(echo "$line" | jq -r '.count')
+          NEW_COUNT=$((OLD_COUNT + 1))
+          OLD_PROJECTS=$(echo "$line" | jq -r '.projects')
+          NEW_PROJECTS="$OLD_PROJECTS"
+          # Exact token match for project name (not substring)
+          if ! printf '%s' "$OLD_PROJECTS" | tr ',' '\n' | grep -Fxq -- "$PROJECT_NAME"; then
+            NEW_PROJECTS="${OLD_PROJECTS},${PROJECT_NAME}"
+          fi
+          echo "$line" | jq -c --argjson count "$NEW_COUNT" --arg last "$NOW" --arg projects "$NEW_PROJECTS" \
+            '.count = $count | .last = $last | .projects = $projects'
+        else
+          echo "$line"
+        fi
+      done < "$MEMORY_FILE" > "$TMPFILE"
+      mv "$TMPFILE" "$MEMORY_FILE"
+    else
+      # Create new entry
+      jq -nc --arg id "$id" --arg insight "$insight" --arg last "$NOW" --arg projects "$PROJECT_NAME" \
+        '{id: $id, insight: $insight, count: 1, last: $last, projects: $projects}' >> "$MEMORY_FILE"
+    fi
   fi
-fi
+}
 
-if grep -q '"build"' "$workspace_root/package.json" 2>/dev/null; then
-  if pnpm build 2>/dev/null; then
-    :
-  else
-    echo '{"cancel":true,"contextModification":"","errorMessage":"pnpm build failed. Fix build errors before considering the task complete."}'
-    exit 0
+check_pattern "dry-violation" \
+  "DRY|don.t repeat|already exists|duplicat" \
+  "Check existing files before creating new ones. Extract shared utils when there is clear reuse."
+
+check_pattern "unused-code" \
+  "unused import|unused variable|dead code" \
+  "Biome --fix handles unused imports/variables automatically."
+
+check_pattern "type-safety-bypass" \
+  "as any|ts-ignore|ts-expect-error" \
+  "Never use as any or ts-ignore. Use the most specific correct type."
+
+check_pattern "scope-discipline" \
+  "refactor.*minimal|minimal change|scope creep" \
+  "Make the minimal change needed. Do not refactor while fixing."
+
+check_pattern "circular-dep" \
+  "circular dependency|circular import" \
+  "Restructure module boundaries to break circular dependencies."
+
+check_pattern "re-export" \
+  "re-export|barrel file|index file.*logic" \
+  "Avoid re-exports. Index files may only re-export modules, never logic."
+
+check_pattern "path-resolution" \
+  "process.cwd|project root.*monorepo" \
+  "Never assume process.cwd() equals project root in monorepos."
+
+check_pattern "data-migration" \
+  "migration|schema change|database migrat" \
+  "Verify schema and data integrity after migrations. Make migrations idempotent."
+
+check_pattern "workaround" \
+  "workaround|hack|bandaid|band-aid" \
+  "Document why workaround was needed and plan a proper fix."
+
+check_pattern "performance" \
+  "performance|slow query|optimize|bottleneck" \
+  "Profile before optimizing. Measure, do not guess."
+
+check_pattern "security" \
+  "security|secret|credential|api.key|token leak" \
+  "Review credentials handling. Never commit secrets."
+
+check_pattern "test-mock" \
+  "test.*mock.*implementation|mock.*detail" \
+  "Mock behavior (modules), not implementation details."
+
+if [ -n "$MATCHED_IDS" ]; then
+  ENTRY_COUNT=0
+  [ -f "$MEMORY_FILE" ] && ENTRY_COUNT=$(wc -l < "$MEMORY_FILE" | tr -d ' ')
+
+  # Squeeze to top 15 if over limit
+  if [ "$ENTRY_COUNT" -gt 15 ]; then
+    TMPFILE=$(mktemp)
+    jq -s 'sort_by(-.count) | .[0:15] | .[]' "$MEMORY_FILE" > "$TMPFILE" 2>/dev/null && mv "$TMPFILE" "$MEMORY_FILE" || true
   fi
+
+  inform "[capture-insights] Patterns detected in session (${PROJECT_NAME}, ${ENTRY_COUNT} total entries). Learning from this session."
 fi
 
-echo '{"cancel":false,"contextModification":"","errorMessage":""}'
+allow
