@@ -1,6 +1,6 @@
 {
 	"name": "{{PROJECT_NAME}}",
-	"version": "0.31.9",
+	"version": "0.31.10",
 	"description": "{{PROJECT_DESCRIPTION}}",
 	"type": "module",
 	"license": "MIT",
