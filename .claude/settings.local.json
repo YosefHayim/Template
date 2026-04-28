@@ -8,7 +8,16 @@
       "Bash(git pull *)",
       "Bash(git commit *)",
       "Bash(git push *)",
-      "Bash(git stash *)"
+      "Bash(git stash *)",
+      "Bash(sort -t' ' -k2 -n)",
+      "Bash(grep -E \"\\\\.\\(md|ts|js|json\\)$\")",
+      "Bash(grep -v \"/skills$\")",
+      "Bash([ -f \"/Applications/Github/Template/$dir/skills/typescript-best-practices/SKILL.md\" ])",
+      "Bash([ -f \"/Applications/Github/Template/$file\" ])",
+      "Bash([ -f \"/Applications/Github/universal-agent-toolkit/$dir/skills/typescript-best-practices/SKILL.md\" ])",
+      "Bash([ -f \"/Applications/Github/universal-agent-toolkit/$file\" ])",
+      "Bash(git status *)",
+      "Bash(git *)"
     ]
   },
   "enableAllProjectMcpServers": true,
